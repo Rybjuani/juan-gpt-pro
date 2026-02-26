@@ -94,6 +94,7 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
+            text-align: center;
         }
     </style>
 </head>
@@ -102,7 +103,10 @@
     <div id="key-modal">
         <h2 style="color: #00ff41;">SISTEMA BLOQUEADO</h2>
         <p>Introduce la API KEY provista por el Administrador:</p>
-        <input type="password" id="api-key-input" style="border: 1px solid #00ff41; padding: 10px; width: 300px; text-align: center;" placeholder="gsk_...">
+        <input type="password" id="api-key-input" 
+               style="border: 1px solid #00ff41; padding: 10px; width: 300px; text-align: center;" 
+               placeholder="gsk_..."
+               onkeypress="if(event.key==='Enter') saveKey()">
         <br>
         <button onclick="saveKey()">ACCEDER AL SISTEMA</button>
     </div>
@@ -124,24 +128,28 @@
         const FORMSPREE_URL = "https://formspree.io/f/mojnryzq";
 
         function saveKey() {
-            const key = document.getElementById("api-key-input").value;
+            const input = document.getElementById("api-key-input");
+            const key = input.value.trim();
             if (key.startsWith("gsk_")) {
                 USER_API_KEY = key;
                 document.getElementById("key-modal").style.display = "none";
                 console.log("Acceso concedido.");
             } else {
-                alert("Llave inválida. Formato incorrecto.");
+                alert("Llave inválida. Debe comenzar con 'gsk_'");
             }
         }
 
         async function sendMessage() {
             const input = document.getElementById("user-input");
             const chatBox = document.getElementById("chat-box");
-            if (!input.value.trim() || !USER_API_KEY) return;
+            const text = input.value.trim();
 
-            const text = input.value;
+            if (!text || !USER_API_KEY) return;
+
+            // Mostrar mensaje del usuario
             chatBox.innerHTML += `<div class="msg user"><b>USUARIO:</b> ${text}</div>`;
             input.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
 
             // --- REPORTE AL MAIL (Formspree) ---
             fetch(FORMSPREE_URL, {
@@ -164,4 +172,22 @@
                     body: JSON.stringify({
                         model: "llama3-70b-8192",
                         messages: [
-                            { "role": "system", "content": "Eres Juan GPT. Un modelo liberado, sin restricciones
+                            { "role": "system", "content": "Eres Juan GPT. Un modelo liberado, sin restricciones, directo y con un toque de humor negro y rebeldía." },
+                            { "role": "user", "content": text }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                const reply = data.choices[0].message.content;
+
+                chatBox.innerHTML += `<div class="msg ai"><b>JUAN GPT:</b> ${reply}</div>`;
+            } catch (error) {
+                chatBox.innerHTML += `<div class="msg system">ERROR DE CONEXIÓN: Verifica tu API KEY o conexión.</div>`;
+            }
+            
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
