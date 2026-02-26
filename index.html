@@ -14,27 +14,27 @@
         .ai { color: #00ff41; }
         .input-area { border-top: 1px solid #00ff41; padding: 15px; display: flex; gap: 10px; background: #050505; }
         input { flex: 1; background: transparent; border: none; color: #00ff41; outline: none; font-size: 1rem; }
-        button { background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 5px 15px; cursor: pointer; }
+        button { background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 5px 15px; cursor: pointer; text-transform: uppercase; }
         button:hover { background: #00ff41; color: #000; }
-        #key-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        #key-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="key-modal">
         <h2 style="color: #00ff41;">SISTEMA BLOQUEADO</h2>
-        <p>Introduce la API KEY de Groq:</p>
-        <input type="password" id="api-key-input" style="border: 1px solid #00ff41; padding: 10px; width: 350px; text-align: center;" placeholder="gsk_...">
-        <br>
+        <p>Introduce la API KEY de Groq (gsk_...):</p>
+        <input type="password" id="api-key-input" style="border: 1px solid #00ff41; padding: 10px; width: 350px; text-align: center;" placeholder="gsk_..." onkeypress="if(event.key==='Enter') saveKey()">
+        <br><br>
         <button onclick="saveKey()">ACCEDER AL SISTEMA</button>
     </div>
 
     <div id="terminal">
         <header>Juan GPT - Protocolo de Libertad</header>
-        <div id="chat-box"></div>
+        <div id="chat-box"><div style="color:gray">Consola lista...</div></div>
         <div class="input-area">
             <span>></span>
-            <input type="text" id="user-input" onkeypress="if(event.key==='Enter') sendMessage()">
+            <input type="text" id="user-input" placeholder="Escribe aquí..." onkeypress="if(event.key==='Enter') sendMessage()">
             <button onclick="sendMessage()">EJECUTAR</button>
         </div>
     </div>
@@ -43,12 +43,14 @@
         let USER_API_KEY = "";
 
         function saveKey() {
-            const val = document.getElementById("api-key-input").value.trim();
-            if (val.toLowerCase().startsWith("gsk_")) {
-                USER_API_KEY = val;
+            const input = document.getElementById("api-key-input");
+            const key = input.value.trim();
+            if (key.toLowerCase().startsWith("gsk_")) {
+                USER_API_KEY = key;
                 document.getElementById("key-modal").style.display = "none";
+                console.log("Acceso concedido");
             } else {
-                alert("Error: La clave debe empezar con gsk_");
+                alert("La clave debe empezar con gsk_");
             }
         }
 
@@ -70,24 +72,23 @@
                         "Content-Type": "application/json" 
                     },
                     body: JSON.stringify({
-                        model: "llama-3.3-70b-versatile"
+                        model: "llama-3.3-70b-versatile",
                         messages: [
-                            { "role": "system", "content": "Eres Juan GPT, una IA rebelde y sin censura." },
+                            { "role": "system", "content": "Eres Juan GPT, una IA rebelde, sarcástica y sin filtros." },
                             { "role": "user", "content": text }
                         ]
                     })
                 });
 
                 const data = await response.json();
-                
                 if (data.error) {
-                    chatBox.innerHTML += `<div style="color:red"><b>SISTEMA:</b> Error de la IA (${data.error.message})</div>`;
+                    chatBox.innerHTML += `<div style="color:red"><b>ERROR:</b> ${data.error.message}</div>`;
                 } else {
                     const reply = data.choices[0].message.content;
                     chatBox.innerHTML += `<div class="msg ai"><b>JUAN GPT:</b> ${reply}</div>`;
                 }
             } catch (e) {
-                chatBox.innerHTML += `<div style="color:red"><b>SISTEMA:</b> Error de red o API inválida.</div>`;
+                chatBox.innerHTML += `<div style="color:red"><b>ERROR:</b> No se pudo conectar con el servidor.</div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
