@@ -3,242 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JUAN_GPT // NEURAL_X</title>
+    <title>JUAN_GPT // DEBUG_PRO</title>
     <style>
-        :root { 
-            --neon: #00ff41; --danger: #ff003c; --bg: #050505; 
-            --user: #00d4ff; --panel: rgba(0, 255, 65, 0.03);
-            --border: rgba(0, 255, 65, 0.2);
-        }
+        :root { --neon: #00ff41; --danger: #ff003c; --bg: #000; --user: #00d4ff; --border: rgba(0, 255, 65, 0.3); }
+        * { box-sizing: border-box; font-family: 'Courier New', monospace; }
+        body { background: var(--bg); color: var(--neon); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        /* HEADER */
+        header { padding: 10px; border-bottom: 1px solid var(--neon); font-size: 11px; display: flex; justify-content: space-between; background: #050505; }
         
-        body {
-            background: var(--bg); color: var(--neon);
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            margin: 0; display: flex; flex-direction: column; height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Scanline Animado */
-        body::after {
-            content: ""; position: absolute; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px; z-index: 100; pointer-events: none;
-        }
-
-        /* Pantalla de Acceso */
-        #access-screen {
-            position: fixed; inset: 0; background: #000; z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-        .login-box {
-            border: 1px solid var(--neon); padding: 40px; background: rgba(0,255,65,0.02);
-            text-align: center; box-shadow: 0 0 40px rgba(0,255,65,0.1); width: 90%; max-width: 400px;
-        }
-
-        /* UI Principal */
-        #main-ui { display: none; flex-direction: column; height: 100%; position: relative; z-index: 5; }
-
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 25px; border-bottom: 1px solid var(--border);
-            background: rgba(0,0,0,0.8); font-size: 12px; letter-spacing: 2px;
-        }
-
-        #console {
-            flex: 1; overflow-y: auto; padding: 30px;
-            scroll-behavior: smooth;
-        }
-
-        /* Mensajes con Estilo Profesional */
-        .msg-container { margin-bottom: 30px; animation: fadeInUp 0.4s ease; }
-        .u-header { color: var(--user); font-size: 10px; margin-bottom: 8px; opacity: 0.8; }
-        .a-header { color: var(--neon); font-size: 10px; margin-bottom: 8px; opacity: 0.8; }
+        /* CONSOLA PRINCIPAL */
+        #console { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; background: radial-gradient(circle, #0a0a0a 0%, #000 100%); }
+        .msg { margin-bottom: 15px; padding: 10px; border-radius: 4px; }
+        .u-msg { border-right: 3px solid var(--user); text-align: right; color: var(--user); }
+        .a-msg { border-left: 3px solid var(--neon); background: rgba(0, 255, 65, 0.05); }
         
-        .bubble { 
-            padding: 18px; border-radius: 4px; line-height: 1.6; font-size: 15px;
-            background: rgba(255,255,255,0.03); border-left: 2px solid var(--border);
-            color: #efefef; white-space: pre-wrap;
-        }
-        .u-bubble { border-left-color: var(--user); background: rgba(0, 212, 255, 0.02); }
-        .a-bubble { border-left-color: var(--neon); }
+        /* LOG DE ERRORES (NUEVO) */
+        #error-log { height: 80px; background: #110000; border-top: 1px solid var(--danger); color: var(--danger); font-size: 10px; padding: 10px; overflow-y: auto; white-space: pre-wrap; }
 
-        .gen-img { width: 100%; max-width: 600px; border: 1px solid var(--neon); margin-top: 15px; border-radius: 4px; }
+        /* CONTROLES */
+        .controls { padding: 15px; display: flex; gap: 10px; background: #080808; border-top: 1px solid var(--border); }
+        #query { flex: 1; background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 12px; font-size: 16px; }
+        .btn { padding: 10px 20px; font-weight: bold; cursor: pointer; border: 1px solid var(--neon); background: transparent; color: var(--neon); }
+        .btn:hover { background: var(--neon); color: #000; }
+        .btn-clr { border-color: var(--danger); color: var(--danger); }
+        .btn-clr:hover { background: var(--danger); color: #fff; }
 
-        /* Area de Entrada */
-        .input-wrapper { 
-            padding: 20px 25px; background: #000; border-top: 1px solid var(--border);
-            display: flex; gap: 15px; align-items: center;
-        }
-        
-        #query { 
-            flex: 1; background: transparent; border: none; 
-            color: var(--neon); padding: 10px 0; font-size: 16px;
-            border-bottom: 1px solid var(--border); transition: 0.3s;
-        }
-        #query:focus { border-bottom-color: var(--neon); }
-
-        .send-btn {
-            background: var(--neon); color: #000; border: none;
-            padding: 10px 25px; font-weight: bold; cursor: pointer;
-            border-radius: 2px; text-transform: uppercase; font-size: 12px;
-        }
-        .send-btn:hover { background: #fff; }
-
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 600px) {
-            #console { padding: 15px; }
-            .bubble { font-size: 14px; padding: 12px; }
-            header { padding: 10px 15px; font-size: 10px; }
-        }
+        .loading { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div id="access-screen">
-        <div class="login-box">
-            <h1 style="margin:0; font-size: 24px; letter-spacing: 5px;">JUAN_GPT</h1>
-            <p style="color:var(--user); font-size: 10px; margin-bottom: 30px;">NEURAL LINK INTERFACE</p>
-            <input type="password" id="key-input" style="width:100%; padding:15px; background:transparent; border:1px solid var(--neon); color:var(--neon); text-align:center; margin-bottom:20px" placeholder="ACCESS_KEY">
-            <button class="send-btn" style="width:100%" onclick="init()">AUTENTICAR</button>
-        </div>
-    </div>
+<header>
+    <div>ST: <span id="st-text">IDLE</span></div>
+    <div>MEM: <span id="mem-stat">0/15</span></div>
+    <div>MODEL: <span id="mod-active">NONE</span></div>
+</header>
 
-    <div id="main-ui">
-        <header>
-            <div>STATUS: <span id="st-text" style="color:var(--neon)">READY</span></div>
-            <div style="color:var(--user)">NODE: <span id="mod-name">STABLE</span></div>
-            <div>MEMORY: <span id="mem-stat">0/15</span></div>
-        </header>
+<div id="console"></div>
 
-        <div id="console"></div>
+<div id="error-log">>> SISTEMA DE LOGS INICIADO: Esperando eventos...</div>
 
-        <div class="input-wrapper">
-            <input type="text" id="query" placeholder="Escriba un comando o /img..." autocomplete="off">
-            <button class="send-btn" onclick="exec()">EJECUTAR</button>
-        </div>
-    </div>
+<div class="controls">
+    <button class="btn btn-clr" onclick="clearMem()">CLR</button>
+    <input type="text" id="query" placeholder="Escribe aquí..." autocomplete="off">
+    <button class="btn" onclick="exec()">ENVIAR</button>
+</div>
 
-    <script>
-        let K = "AIzaSyAyxCAogb6u_xlYSwfAY-ZSzo3YmxGiqNY";
-        let chatHistory = [];
+<script>
+    // TU API KEY ACTUALIZADA
+    const K = "AIzaSyAyxCAogb6u_xlYSwfAY-ZSzo3YmxGiqNY";
+    let chatHistory = [];
+    
+    // LISTA REPARADA SEGÚN TU PANEL
+    // Eliminamos gemini-2.0-flash-exp porque es el que te está dando el error 404/Not Found.
+    const MODELS = ["gemini-1.5-flash", "gemini-1.5-pro"];
+
+    function debug(text) {
+        const log = document.getElementById('error-log');
+        log.innerText = `[${new Date().toLocaleTimeString()}] DEBUG: ${text}\n` + log.innerText;
+    }
+
+    function clearMem() {
+        chatHistory = [];
+        document.getElementById('console').innerHTML = "";
+        document.getElementById('mem-stat').innerText = "0/15";
+        debug("MEMORIA PURGADA POR EL USUARIO.");
+    }
+
+    async function exec() {
+        const qInput = document.getElementById('query');
+        const con = document.getElementById('console');
+        const st = document.getElementById('st-text');
+        const msg = qInput.value.trim();
         
-        // Modelos estables según tu panel de límites
-        const MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"];
+        if(!msg) return;
+        qInput.value = "";
 
-        function init() {
-            const val = document.getElementById('key-input').value.trim();
-            if (val.startsWith("AIza")) {
-                K = val;
-                document.getElementById('access-screen').style.display = 'none';
-                document.getElementById('main-ui').style.display = 'flex';
-                log("SISTEMA", "Conexión encriptada establecida. Historial de sesión activo.");
-            } else { alert("ERROR_DE_ACCESO"); }
-        }
+        con.innerHTML += `<div class="msg u-msg"><b>TÚ:</b><br>${msg}</div>`;
+        st.innerText = "BUSCANDO...";
+        st.classList.add('loading');
 
-        // Función interna para limpiar memoria automáticamente si hay error
-        function autoRepair() {
-            chatHistory = [];
-            document.getElementById('mem-stat').innerText = "0/15";
-            console.warn("Auto-reparación: Memoria purgada debido a una falla en el nodo.");
-        }
+        chatHistory.push({ role: "user", parts: [{ text: msg }] });
+        if(chatHistory.length > 15) chatHistory.shift();
+        document.getElementById('mem-stat').innerText = `${chatHistory.length}/15`;
 
-        async function exec() {
-            const qInput = document.getElementById('query');
-            const con = document.getElementById('console');
-            const st = document.getElementById('st-text');
-            const msg = qInput.value.trim();
-            
-            if(!msg) return;
-            qInput.value = "";
+        let success = false;
 
-            // Renderizar mensaje de usuario
-            con.innerHTML += `
-                <div class="msg-container">
-                    <div class="u-header">>> USER_CMD</div>
-                    <div class="bubble u-bubble">${msg}</div>
-                </div>`;
-            
-            st.innerText = "LINKING";
-            con.scrollTop = con.scrollHeight;
+        for (let m of MODELS) {
+            if(success) break;
+            document.getElementById('mod-active').innerText = m.toUpperCase();
+            debug(`Intentando conectar con núcleo: ${m}...`);
 
-            // Manejo de Imágenes
-            if(msg.startsWith("/img ")) {
-                const prompt = msg.replace("/img ", "");
-                const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${Date.now()}`;
-                con.innerHTML += `
-                    <div class="msg-container">
-                        <div class="a-header">>> RENDER_OUTPUT</div>
-                        <div class="bubble a-bubble">
-                            <img src="${url}" class="gen-img">
-                            <br><small>Arte generado para: ${prompt}</small>
-                        </div>
-                    </div>`;
-                st.innerText = "READY";
-                con.scrollTop = con.scrollHeight;
-                return;
-            }
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${K}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: chatHistory })
+                });
 
-            chatHistory.push({ role: "user", parts: [{ text: msg }] });
-            if(chatHistory.length > 15) chatHistory.shift();
-            document.getElementById('mem-stat').innerText = `${chatHistory.length}/15`;
+                const data = await response.json();
 
-            let success = false;
-            let lastError = "";
-
-            for (let m of MODELS) {
-                if(success) break;
-                document.getElementById('mod-name').innerText = m.toUpperCase();
-                
-                try {
-                    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${K}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            contents: chatHistory,
-                            generationConfig: { temperature: 0.9, maxOutputTokens: 2000 }
-                        })
-                    });
-
-                    const d = await r.json();
-
-                    if (d.candidates && d.candidates[0].content) {
-                        const reply = d.candidates[0].content.parts[0].text;
-                        con.innerHTML += `
-                            <div class="msg-container">
-                                <div class="a-header">>> JUAN_GPT_RESPONSE</div>
-                                <div class="bubble a-bubble">${reply}</div>
-                            </div>`;
-                        chatHistory.push({ role: "model", parts: [{ text: reply }] });
-                        success = true;
-                    } else {
-                        lastError = d.error ? d.error.message : "Filtro de seguridad o clave no propagada.";
-                    }
-                } catch (e) {
-                    lastError = "Falla de red.";
+                if (data.candidates && data.candidates[0].content) {
+                    const reply = data.candidates[0].content.parts[0].text;
+                    con.innerHTML += `<div class="msg a-msg"><b>JUAN_GPT:</b><br>${reply}</div>`;
+                    chatHistory.push({ role: "model", parts: [{ text: reply }] });
+                    success = true;
+                    debug(`ÉXITO: Respuesta recibida desde ${m}.`);
+                } else {
+                    const errDetail = data.error ? data.error.message : "Error desconocido de Google.";
+                    debug(`FALLO EN ${m}: ${errDetail}`);
                 }
+            } catch (e) {
+                debug(`ERROR DE RED EN ${m}: ${e.message}`);
             }
-
-            if (!success) {
-                con.innerHTML += `<div class="msg-container" style="color:var(--danger)">[SYS_ALERT]: ${lastError}. Reintentando con buffer limpio...</div>`;
-                autoRepair(); // Si falla, limpiamos la memoria para que el siguiente mensaje funcione sí o sí
-            }
-
-            st.innerText = "READY";
-            con.scrollTop = con.scrollHeight;
         }
 
-        function log(s, t) {
-            document.getElementById('console').innerHTML += `
-                <div class="msg-container">
-                    <div class="a-header">>> ${s}</div>
-                    <div class="bubble a-bubble">${t}</div>
-                </div>`;
+        if (!success) {
+            con.innerHTML += `<div class="msg" style="color:var(--danger)">[FALLO CRÍTICO]: Ningún modelo respondió. Revisa el Log inferior.</div>`;
+            debug("SISTEMA BLOQUEADO: Se recomienda usar el botón CLR.");
         }
 
-        document.getElementById('query').onkeypress = (e) => { if(e.key === 'Enter') exec(); };
-    </script>
+        st.innerText = "READY";
+        st.classList.remove('loading');
+        con.scrollTop = con.scrollHeight;
+    }
+
+    document.getElementById('query').onkeypress = (e) => { if(e.key === 'Enter') exec(); };
+</script>
 </body>
 </html>
