@@ -3,141 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JUAN_GPT // NEURAL_ELITE</title>
+    <title>JUAN_GPT // NEURAL_X</title>
     <style>
         :root { 
-            --neon: #00ff41; --danger: #ff003c; --bg: #020408; 
-            --user: #00d4ff; --glass: rgba(0, 255, 65, 0.03);
-            --border: rgba(0, 255, 65, 0.2);
+            --neon: #00ff41; --danger: #ff003c; --bg: #010204; 
+            --user: #00d4ff; --panel: rgba(0, 255, 65, 0.05);
+            --border: rgba(0, 255, 65, 0.3);
+            --font-main: 'JetBrains Mono', 'Fira Code', monospace;
         }
         
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         
         body {
             background: var(--bg); color: var(--neon);
-            font-family: 'Segoe UI', 'Ubuntu Mono', monospace;
+            font-family: var(--font-main);
             margin: 0; display: flex; flex-direction: column; height: 100vh;
-            overflow: hidden; background-image: radial-gradient(circle at center, #0a1a0a 0%, #020408 100%);
+            overflow: hidden;
         }
 
-        /* Scanline Animado */
-        body::before {
-            content: ""; position: absolute; inset: 0;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 50%);
-            background-size: 100% 4px; z-index: 100; pointer-events: none;
-        }
+        /* Efecto de Matriz de fondo */
+        #bg-canvas { position: fixed; inset: 0; opacity: 0.1; z-index: 1; pointer-events: none; }
 
-        /* Interfaz de Acceso */
+        /* Pantalla de Acceso con Animación */
         #access-screen {
             position: fixed; inset: 0; background: #000; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 20px;
+        }
+        .login-card {
+            border: 2px solid var(--neon); padding: 30px; background: rgba(0,0,0,0.9);
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.2); width: 90%; max-width: 400px;
+            text-align: center; position: relative;
         }
 
-        .cyber-box {
-            border: 1px solid var(--neon); padding: 40px; background: var(--glass);
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1); text-align: center;
-            backdrop-filter: blur(10px); width: 100%; max-width: 400px;
-        }
-
-        /* UI Principal */
-        #main-ui { display: none; flex-direction: column; height: 100%; padding: 15px; position: relative; }
+        /* UI Principal Estilo "Console Elite" */
+        #main-ui { display: none; flex-direction: column; height: 100%; padding: 15px; position: relative; z-index: 5; }
 
         header {
-            display: grid; grid-template-columns: 1fr auto 1fr;
+            display: grid; grid-template-columns: repeat(3, 1fr);
             gap: 10px; padding: 12px; border: 1px solid var(--border);
-            background: var(--glass); margin-bottom: 10px; font-size: 11px;
-            letter-spacing: 1px; text-transform: uppercase;
+            background: var(--panel); margin-bottom: 15px; font-size: 10px;
+            box-shadow: inset 0 0 15px rgba(0,255,65,0.1);
         }
 
         #console {
             flex: 1; overflow-y: auto; border: 1px solid var(--border);
-            background: rgba(0,0,0,0.6); padding: 20px;
-            scrollbar-width: none; mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+            background: rgba(0,0,0,0.8); padding: 20px;
+            scroll-behavior: smooth; border-radius: 4px;
         }
-        #console::-webkit-scrollbar { display: none; }
 
-        .msg { margin-bottom: 25px; animation: fadeIn 0.4s ease; max-width: 90%; }
-        .u-msg { color: var(--user); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 8px; }
+        .msg { margin-bottom: 20px; animation: msgFade 0.3s ease-out; }
+        .u-msg { color: var(--user); font-weight: bold; margin-bottom: 5px; font-size: 11px; }
         .a-msg { 
-            color: #e0e0e0; line-height: 1.6; padding: 15px; 
-            background: rgba(255,255,255,0.03); border-radius: 0 15px 15px 15px;
-            border-left: 3px solid var(--neon); position: relative;
+            color: #fff; line-height: 1.6; padding: 15px; border-radius: 0 10px 10px 10px;
+            background: rgba(255,255,255,0.03); border-left: 3px solid var(--neon);
+            white-space: pre-wrap; font-size: 14px;
         }
 
-        .gen-img { width: 100%; border-radius: 8px; border: 1px solid var(--neon); margin-top: 15px; }
+        .gen-img { width: 100%; border: 1px solid var(--neon); margin-top: 15px; box-shadow: 0 0 15px var(--neon); }
 
-        /* Controles */
-        .input-area { 
-            display: flex; gap: 10px; padding-top: 15px; 
-            background: transparent; align-items: center;
+        /* Controles Inferiores */
+        .controls { 
+            display: flex; flex-direction: column; gap: 10px; padding-top: 15px; 
         }
-
+        .input-group { display: flex; gap: 10px; }
+        
         #query { 
-            flex: 1; background: rgba(0,0,0,0.8); border: 1px solid var(--border); 
-            color: var(--neon); padding: 16px; font-size: 16px; outline: none;
-            transition: 0.3s; border-radius: 8px;
+            flex: 1; background: #000; border: 1px solid var(--border); 
+            color: var(--neon); padding: 16px; font-size: 16px; border-radius: 4px;
         }
-        #query:focus { border-color: var(--neon); box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
+        #query:focus { border-color: var(--neon); box-shadow: 0 0 10px var(--neon); }
 
-        .btn-icon {
+        .btn-action {
             background: var(--neon); color: #000; border: none;
-            width: 50px; height: 50px; border-radius: 8px; cursor: pointer;
-            font-weight: bold; display: flex; align-items: center; justify-content: center;
+            padding: 0 25px; border-radius: 4px; font-weight: 800; cursor: pointer;
+            transition: 0.2s;
         }
+        .btn-action:hover { background: #fff; transform: scale(1.05); }
 
-        .voice-badge { 
-            font-size: 9px; padding: 2px 5px; border: 1px solid var(--neon); 
-            margin-left: 10px; vertical-align: middle; 
+        /* Switch de Voz */
+        .voice-toggle {
+            display: flex; align-items: center; gap: 10px; font-size: 10px;
+            background: var(--panel); padding: 8px; border: 1px solid var(--border); width: fit-content;
         }
+        .switch {
+            position: relative; display: inline-block; width: 34px; height: 18px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background-color: #333; transition: .4s; border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 12px; width: 12px;
+            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--neon); }
+        input:checked + .slider:before { transform: translateX(16px); }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes msgFade { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* Responsive Fix */
         @media (max-width: 600px) {
-            header { grid-template-columns: 1fr; text-align: center; gap: 5px; }
-            .a-msg { font-size: 14px; }
-            .cyber-box { padding: 20px; }
+            header { grid-template-columns: 1fr; }
+            .a-msg { font-size: 13px; }
         }
     </style>
 </head>
 <body>
 
+    <canvas id="bg-canvas"></canvas>
+
     <div id="access-screen">
-        <div class="cyber-box">
-            <h1 style="margin:0; font-size: 2rem;">JUAN_GPT</h1>
-            <p style="color: var(--danger); font-size: 0.7rem;">ESTADO: ENCRIPTADO</p>
-            <input type="password" id="key-input" style="width:100%; padding:12px; background:#111; border:1px solid var(--neon); color:var(--neon); margin: 20px 0;" placeholder="API_KEY_MASTER">
-            <button class="btn-icon" onclick="init()" style="width:100%;">DESBLOQUEAR NÚCLEO</button>
+        <div class="login-card">
+            <h2 style="letter-spacing:10px; margin:0">JUAN_GPT</h2>
+            <p style="color:var(--danger); font-size:10px">CORE ACCESS REQUIRED</p>
+            <input type="password" id="key-input" style="width:100%; padding:15px; background:#111; border:1px solid var(--neon); color:var(--neon); margin:20px 0" placeholder="ENTER API_KEY">
+            <button class="btn-action" style="width:100%; height:50px" onclick="init()">UNLOCK KERNEL</button>
         </div>
     </div>
 
     <div id="main-ui">
         <header>
-            <div>SYNC: <span id="st-text" style="color:#fff">STANDBY</span></div>
-            <div style="color:var(--user)">MEMORIA_ACTIVA: <span id="mem-stat">0/15</span></div>
-            <div id="model-badge">KERNEL: v3.0</div>
+            <div>[STATUS]: <span id="st-text" style="color:var(--neon)">ONLINE</span></div>
+            <div style="text-align:center">[MEM]: <span id="mem-stat">0/15</span></div>
+            <div style="text-align:right">[MOD]: <span id="mod-name">HYBRID</span></div>
         </header>
 
         <div id="console"></div>
 
-        <div class="input-area">
-            <button class="btn-icon" style="background:var(--danger); color:white" onclick="clearMem()">×</button>
-            <input type="text" id="query" placeholder="Escriba comando o /img..." autocomplete="off">
-            <button class="btn-icon" onclick="exec()">></button>
+        <div class="controls">
+            <div class="voice-toggle">
+                SINTETIZADOR_VOZ: 
+                <label class="switch">
+                    <input type="checkbox" id="voice-enable">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="input-group">
+                <button class="btn-action" style="background:var(--danger); color:white" onclick="clearMem()">CLR</button>
+                <input type="text" id="query" placeholder="Escriba comando o /img..." autocomplete="off">
+                <button class="btn-action" onclick="exec()">RUN</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // NUEVA CLAVE INTEGRADA
+        // API KEY Y CONFIGURACIÓN
         let K = "AIzaSyAyxCAogb6u_xlYSwfAY-ZSzo3YmxGiqNY";
         let chatHistory = [];
-        let isSpeaking = false;
-
-        // LISTA DE MODELOS REPARADA (Solo versiones estables de producción)
+        
+        // REPARACIÓN SEGÚN TU IMAGEN: Modelos disponibles en 2026
         const MODELS = [
-            "gemini-1.5-flash",
-            "gemini-1.5-pro"
+            "gemini-3.1-pro",
+            "gemini-3-flash",
+            "gemini-2.5-flash"
         ];
 
         function init() {
@@ -146,45 +164,42 @@
                 K = val;
                 document.getElementById('access-screen').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'flex';
-                speak("Sistema iniciado. Bienvenido, Juan.");
-                log("SISTEMA", "BIO-LINK ESTABLECIDO. MODELOS LISTOS.");
-            } else { alert("ERROR DE CREDENCIALES"); }
-        }
-
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'es-ES';
-            msg.rate = 1.1;
-            msg.pitch = 0.9;
-            window.speechSynthesis.speak(msg);
+                log("SISTEMA", "Protocolo de red 2026 activado. Núcleos Pro/Flash vinculados.");
+            } else { alert("ACCESS DENIED"); }
         }
 
         function clearMem() {
             chatHistory = [];
             document.getElementById('console').innerHTML = "";
             document.getElementById('mem-stat').innerText = "0/15";
-            speak("Memoria purgada.");
+            log("SISTEMA", "Buffer de memoria limpiado.");
+        }
+
+        function speak(text) {
+            if (!document.getElementById('voice-enable').checked) return;
+            window.speechSynthesis.cancel();
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'es-ES';
+            speech.rate = 1.2;
+            window.speechSynthesis.speak(speech);
         }
 
         async function exec() {
             const qInput = document.getElementById('query');
             const con = document.getElementById('console');
-            const st = document.getElementById('st-text');
             const msg = qInput.value.trim();
-            
             if(!msg) return;
             qInput.value = "";
-            
-            con.innerHTML += `<div class="msg"><div class="u-msg">USER_AUTH:</div><div class="a-msg" style="border-left-color:var(--user)">${msg}</div></div>`;
-            st.innerText = "LINKING...";
+
+            con.innerHTML += `<div class="msg"><div class="u-msg">>> USER_CMD:</div><div class="a-msg" style="border-left-color:var(--user)">${msg}</div></div>`;
+            document.getElementById('st-text').innerText = "PROCESANDO...";
             con.scrollTop = con.scrollHeight;
 
             if(msg.startsWith("/img ")) {
                 const prompt = msg.replace("/img ", "");
                 const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${Date.now()}`;
-                con.innerHTML += `<div class="msg"><div class="u-msg">JUAN_GPT_ART:</div><div class="a-msg"><img src="${url}" class="gen-img"><br>Arte generado para: ${prompt}</div></div>`;
-                st.innerText = "ONLINE";
+                con.innerHTML += `<div class="msg"><div class="u-msg">RENDER_SYSTEM:</div><div class="a-msg"><img src="${url}" class="gen-img"></div></div>`;
+                document.getElementById('st-text').innerText = "ONLINE";
                 return;
             }
 
@@ -193,17 +208,18 @@
             document.getElementById('mem-stat').innerText = `${chatHistory.length}/15`;
 
             let success = false;
-            let errorMsg = "";
+            let lastError = "";
 
             for (let m of MODELS) {
                 if(success) break;
+                document.getElementById('mod-name').innerText = m.toUpperCase();
                 try {
                     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${K}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ 
                             contents: chatHistory,
-                            generationConfig: { temperature: 0.9, maxOutputTokens: 1000 }
+                            generationConfig: { temperature: 1, maxOutputTokens: 2000 }
                         })
                     });
 
@@ -216,19 +232,19 @@
                         speak(reply);
                         success = true;
                     } else {
-                        errorMsg = d.error ? d.error.message : "Falla en el núcleo de seguridad.";
+                        lastError = d.error ? d.error.message : "Falla en el filtrado de seguridad.";
                     }
                 } catch (e) {
-                    errorMsg = "Sin respuesta del satélite.";
+                    lastError = "Falla de enlace físico (Network Error).";
                 }
             }
 
             if (!success) {
-                con.innerHTML += `<div class="msg" style="color:var(--danger)">[CRITICAL_FAILURE]: ${errorMsg}</div>`;
+                con.innerHTML += `<div class="msg" style="color:var(--danger)">[CRITICAL_ERR]: ${lastError}</div>`;
                 chatHistory.pop();
             }
 
-            st.innerText = "ONLINE";
+            document.getElementById('st-text').innerText = "ONLINE";
             con.scrollTop = con.scrollHeight;
         }
 
@@ -237,6 +253,30 @@
         }
 
         document.getElementById('query').onkeypress = (e) => { if(e.key === 'Enter') exec(); };
+
+        // Animación de fondo simple
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const letters = "01";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function draw() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0f0";
+            ctx.font = fontSize + "px monospace";
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 33);
     </script>
 </body>
 </html>
