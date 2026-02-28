@@ -2,6 +2,9 @@ let K = "";
 let chatHistory = [];
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mojnryzq";
 
+// Modelo fijo: gemini-2.5-flash - el más rápido y estable de tu lista
+const MODEL = "gemini-2.5-flash";
+
 const SYSTEM_PROMPT = {
     role: "user",
     parts: [{ text: "Eres JUAN_GPT, un asistente útil y profesional. Responde de manera clara, concisa y fácil de entender. Evita el uso excesivo de negritas, cursivas o markdown innecesario. Usa formato solo cuando sea necesario para claridad. Mantén un tono amigable y directo." }]
@@ -11,17 +14,9 @@ const SYSTEM_RESPONSE = {
     parts: [{ text: "Entendido. Estoy listo para ayudarte." }]
 };
 
-const keySound = document.getElementById('keySound');
-keySound.volume = 0.8;
-
 function resetSession() {
     chatHistory = [SYSTEM_PROMPT, SYSTEM_RESPONSE];
     document.getElementById('console').innerHTML = '';
-}
-
-function playKeySound() {
-    keySound.currentTime = 0;
-    keySound.play().catch(() => {});
 }
 
 function init() {
@@ -66,14 +61,10 @@ async function exec() {
     await reportToEmail();
 
     status.textContent = "PROCESANDO...";
-    status.style.color = "#ff00aa"; // Ajuste retro
+    status.style.color = "#ff0000";
 
-    const selectedModel = document.getElementById('model-selector').value;
-    document.getElementById('mod-active').textContent = selectedModel;
-
-    let success = false;
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${K}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${K}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contents: chatHistory })
@@ -93,11 +84,10 @@ async function exec() {
             setTimeout(() => newAiMsg.classList.add('visible'), 100);
 
             chatHistory.push({ role: "model", parts: [{ text: reply }] });
-            success = true;
             await reportToEmail();
         }
     } catch {
-        consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[ERROR]</div><div class="text">Modelo falló. Elige otro y reintenta.</div></div>`;
+        consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[ERROR]</div><div class="text">Fallo en la conexión al núcleo. Intenta nuevamente.</div></div>`;
     }
 
     status.textContent = "ONLINE";
@@ -115,13 +105,6 @@ async function reportToEmail() {
         });
     } catch {}
 }
-
-// Desbloqueo y sonido al escribir
-document.addEventListener('click', () => {
-    playKeySound(); // Desbloquea con primer click
-}, { once: true });
-
-document.getElementById('query').addEventListener('keydown', playKeySound);
 
 document.getElementById('query').addEventListener('keypress', e => {
     if (e.key === 'Enter') exec();
