@@ -2,7 +2,8 @@ let K = "";
 let chatHistory = [];
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mojnryzq";
 
-const MODELS = ["gemini-3.1-pro-preview"];
+// Modelo cambiado a 2.5-flash: mucho más rápido, buena cuota en tu cuenta
+const MODELS = ["gemini-2.5-flash"];
 
 const SYSTEM_PROMPT = {
     role: "user",
@@ -22,7 +23,7 @@ function resetSession() {
 
 function playKeySound() {
     keySound.currentTime = 0;
-    keySound.play().catch(() => {}); // silencioso si bloqueado
+    keySound.play().catch(() => {}); // silencioso si navegador bloquea
 }
 
 function init() {
@@ -118,10 +119,8 @@ async function reportToEmail() {
     } catch {}
 }
 
-// Sonido de tecla al escribir (solo en el input de comando)
-document.getElementById('query').addEventListener('keydown', () => {
-    playKeySound();
-});
+// Sonido al escribir en el input de comando
+document.getElementById('query').addEventListener('keydown', playKeySound);
 
 document.getElementById('query').addEventListener('keypress', e => {
     if (e.key === 'Enter') exec();
