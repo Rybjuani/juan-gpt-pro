@@ -4,29 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JUAN_GPT // NEURAL_ELITE_v4</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&display=swap">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="matrix-bg"></div> <!-- Fondo binario animado -->
-    <div id="scanlines"></div> <!-- Efecto scanline -->
+    <div id="matrix-bg"></div>
+    <div id="scanlines"></div>
+
     <div id="access-screen">
-        <h1 class="login-title">JUAN_GPT</h1>
-        <div class="login-status">[SISTEMA BLOQUEADO POR SEGURIDAD]</div>
-        <input type="password" id="key-input" class="login-input" placeholder="INGRESE API_KEY">
-        <button class="login-btn" onclick="init()">DESBLOQUEAR NÚCLEO</button>
+        <div class="login-container">
+            <h1 class="login-title glitch" data-text="JUAN_GPT">JUAN_GPT</h1>
+            <div class="login-status">[ACCESO DENEGADO - PROTOCOLO DE SEGURIDAD ACTIVO]</div>
+            <input type="password" id="key-input" class="login-input" placeholder="API_KEY_XXXX-XXXX-XXXX-XXXX" autocomplete="off">
+            <button class="login-btn glitch-hover" onclick="init()">INICIAR SECUENCIA</button>
+            <div class="binary-decor">01010100 01110010 01111001 00100000 01100001 01100111 01100001 01101001 01101110</div>
+        </div>
     </div>
 
     <div id="main-ui">
-        <header>
-            <div>STATUS: <span id="st-text">ONLINE</span></div>
-            <div>ACTIVE_NODE: <span id="mod-active">AUTO</span></div>
+        <header class="header-cyber">
+            <div class="status-line">
+                STATUS: <span id="st-text" class="status-online">ONLINE</span>
+                <span class="pulse">●</span>
+            </div>
+            <div class="node-line">
+                NODE: <span id="mod-active">gemini-3.1-pro-preview</span>
+            </div>
         </header>
+
         <div id="console"></div>
-        <div id="debug-panel" onclick="toggleDebug()">>> SISTEMA DE MONITOREO ACTIVO...</div>
+
+        <div id="debug-panel" class="debug-collapsible">
+            <div class="debug-header">>> DEBUG CONSOLE [CLICK TO TOGGLE]</div>
+            <div class="debug-content">>> SISTEMA DE MONITOREO ACTIVO...</div>
+        </div>
+
         <div class="controls">
-            <input type="text" id="query" placeholder="Escriba un comando..." autocomplete="off">
-            <button class="btn" onclick="exec()">EJECUTAR</button>
+            <input type="text" id="query" placeholder=">> Enter command..." autocomplete="off">
+            <button class="btn execute-btn glitch-hover" onclick="exec()">EJECUTAR</button>
         </div>
     </div>
 
