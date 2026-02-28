@@ -6,157 +6,127 @@
     <title>JUAN_GPT // NEURAL_X</title>
     <style>
         :root { 
-            --neon: #00ff41; --danger: #ff003c; --bg: #010204; 
-            --user: #00d4ff; --panel: rgba(0, 255, 65, 0.05);
-            --border: rgba(0, 255, 65, 0.3);
-            --font-main: 'JetBrains Mono', 'Fira Code', monospace;
+            --neon: #00ff41; --danger: #ff003c; --bg: #050505; 
+            --user: #00d4ff; --panel: rgba(0, 255, 65, 0.03);
+            --border: rgba(0, 255, 65, 0.2);
         }
         
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         
         body {
             background: var(--bg); color: var(--neon);
-            font-family: var(--font-main);
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
             margin: 0; display: flex; flex-direction: column; height: 100vh;
             overflow: hidden;
         }
 
-        /* Efecto de Matriz de fondo */
-        #bg-canvas { position: fixed; inset: 0; opacity: 0.1; z-index: 1; pointer-events: none; }
+        /* Scanline Animado */
+        body::after {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px; z-index: 100; pointer-events: none;
+        }
 
-        /* Pantalla de Acceso con Animación */
+        /* Pantalla de Acceso */
         #access-screen {
             position: fixed; inset: 0; background: #000; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .login-card {
-            border: 2px solid var(--neon); padding: 30px; background: rgba(0,0,0,0.9);
-            box-shadow: 0 0 50px rgba(0, 255, 65, 0.2); width: 90%; max-width: 400px;
-            text-align: center; position: relative;
+        .login-box {
+            border: 1px solid var(--neon); padding: 40px; background: rgba(0,255,65,0.02);
+            text-align: center; box-shadow: 0 0 40px rgba(0,255,65,0.1); width: 90%; max-width: 400px;
         }
 
-        /* UI Principal Estilo "Console Elite" */
-        #main-ui { display: none; flex-direction: column; height: 100%; padding: 15px; position: relative; z-index: 5; }
+        /* UI Principal */
+        #main-ui { display: none; flex-direction: column; height: 100%; position: relative; z-index: 5; }
 
         header {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 10px; padding: 12px; border: 1px solid var(--border);
-            background: var(--panel); margin-bottom: 15px; font-size: 10px;
-            box-shadow: inset 0 0 15px rgba(0,255,65,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 25px; border-bottom: 1px solid var(--border);
+            background: rgba(0,0,0,0.8); font-size: 12px; letter-spacing: 2px;
         }
 
         #console {
-            flex: 1; overflow-y: auto; border: 1px solid var(--border);
-            background: rgba(0,0,0,0.8); padding: 20px;
-            scroll-behavior: smooth; border-radius: 4px;
+            flex: 1; overflow-y: auto; padding: 30px;
+            scroll-behavior: smooth;
         }
 
-        .msg { margin-bottom: 20px; animation: msgFade 0.3s ease-out; }
-        .u-msg { color: var(--user); font-weight: bold; margin-bottom: 5px; font-size: 11px; }
-        .a-msg { 
-            color: #fff; line-height: 1.6; padding: 15px; border-radius: 0 10px 10px 10px;
-            background: rgba(255,255,255,0.03); border-left: 3px solid var(--neon);
-            white-space: pre-wrap; font-size: 14px;
+        /* Mensajes con Estilo Profesional */
+        .msg-container { margin-bottom: 30px; animation: fadeInUp 0.4s ease; }
+        .u-header { color: var(--user); font-size: 10px; margin-bottom: 8px; opacity: 0.8; }
+        .a-header { color: var(--neon); font-size: 10px; margin-bottom: 8px; opacity: 0.8; }
+        
+        .bubble { 
+            padding: 18px; border-radius: 4px; line-height: 1.6; font-size: 15px;
+            background: rgba(255,255,255,0.03); border-left: 2px solid var(--border);
+            color: #efefef; white-space: pre-wrap;
         }
+        .u-bubble { border-left-color: var(--user); background: rgba(0, 212, 255, 0.02); }
+        .a-bubble { border-left-color: var(--neon); }
 
-        .gen-img { width: 100%; border: 1px solid var(--neon); margin-top: 15px; box-shadow: 0 0 15px var(--neon); }
+        .gen-img { width: 100%; max-width: 600px; border: 1px solid var(--neon); margin-top: 15px; border-radius: 4px; }
 
-        /* Controles Inferiores */
-        .controls { 
-            display: flex; flex-direction: column; gap: 10px; padding-top: 15px; 
+        /* Area de Entrada */
+        .input-wrapper { 
+            padding: 20px 25px; background: #000; border-top: 1px solid var(--border);
+            display: flex; gap: 15px; align-items: center;
         }
-        .input-group { display: flex; gap: 10px; }
         
         #query { 
-            flex: 1; background: #000; border: 1px solid var(--border); 
-            color: var(--neon); padding: 16px; font-size: 16px; border-radius: 4px;
+            flex: 1; background: transparent; border: none; 
+            color: var(--neon); padding: 10px 0; font-size: 16px;
+            border-bottom: 1px solid var(--border); transition: 0.3s;
         }
-        #query:focus { border-color: var(--neon); box-shadow: 0 0 10px var(--neon); }
+        #query:focus { border-bottom-color: var(--neon); }
 
-        .btn-action {
+        .send-btn {
             background: var(--neon); color: #000; border: none;
-            padding: 0 25px; border-radius: 4px; font-weight: 800; cursor: pointer;
-            transition: 0.2s;
+            padding: 10px 25px; font-weight: bold; cursor: pointer;
+            border-radius: 2px; text-transform: uppercase; font-size: 12px;
         }
-        .btn-action:hover { background: #fff; transform: scale(1.05); }
+        .send-btn:hover { background: #fff; }
 
-        /* Switch de Voz */
-        .voice-toggle {
-            display: flex; align-items: center; gap: 10px; font-size: 10px;
-            background: var(--panel); padding: 8px; border: 1px solid var(--border); width: fit-content;
-        }
-        .switch {
-            position: relative; display: inline-block; width: 34px; height: 18px;
-        }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; inset: 0;
-            background-color: #333; transition: .4s; border-radius: 20px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 12px; width: 12px;
-            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--neon); }
-        input:checked + .slider:before { transform: translateX(16px); }
-
-        @keyframes msgFade { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 600px) {
-            header { grid-template-columns: 1fr; }
-            .a-msg { font-size: 13px; }
+            #console { padding: 15px; }
+            .bubble { font-size: 14px; padding: 12px; }
+            header { padding: 10px 15px; font-size: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="bg-canvas"></canvas>
-
     <div id="access-screen">
-        <div class="login-card">
-            <h2 style="letter-spacing:10px; margin:0">JUAN_GPT</h2>
-            <p style="color:var(--danger); font-size:10px">CORE ACCESS REQUIRED</p>
-            <input type="password" id="key-input" style="width:100%; padding:15px; background:#111; border:1px solid var(--neon); color:var(--neon); margin:20px 0" placeholder="ENTER API_KEY">
-            <button class="btn-action" style="width:100%; height:50px" onclick="init()">UNLOCK KERNEL</button>
+        <div class="login-box">
+            <h1 style="margin:0; font-size: 24px; letter-spacing: 5px;">JUAN_GPT</h1>
+            <p style="color:var(--user); font-size: 10px; margin-bottom: 30px;">NEURAL LINK INTERFACE</p>
+            <input type="password" id="key-input" style="width:100%; padding:15px; background:transparent; border:1px solid var(--neon); color:var(--neon); text-align:center; margin-bottom:20px" placeholder="ACCESS_KEY">
+            <button class="send-btn" style="width:100%" onclick="init()">AUTENTICAR</button>
         </div>
     </div>
 
     <div id="main-ui">
         <header>
-            <div>[STATUS]: <span id="st-text" style="color:var(--neon)">ONLINE</span></div>
-            <div style="text-align:center">[MEM]: <span id="mem-stat">0/15</span></div>
-            <div style="text-align:right">[MOD]: <span id="mod-name">HYBRID</span></div>
+            <div>STATUS: <span id="st-text" style="color:var(--neon)">READY</span></div>
+            <div style="color:var(--user)">NODE: <span id="mod-name">STABLE</span></div>
+            <div>MEMORY: <span id="mem-stat">0/15</span></div>
         </header>
 
         <div id="console"></div>
 
-        <div class="controls">
-            <div class="voice-toggle">
-                SINTETIZADOR_VOZ: 
-                <label class="switch">
-                    <input type="checkbox" id="voice-enable">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="input-group">
-                <button class="btn-action" style="background:var(--danger); color:white" onclick="clearMem()">CLR</button>
-                <input type="text" id="query" placeholder="Escriba comando o /img..." autocomplete="off">
-                <button class="btn-action" onclick="exec()">RUN</button>
-            </div>
+        <div class="input-wrapper">
+            <input type="text" id="query" placeholder="Escriba un comando o /img..." autocomplete="off">
+            <button class="send-btn" onclick="exec()">EJECUTAR</button>
         </div>
     </div>
 
     <script>
-        // API KEY Y CONFIGURACIÓN
         let K = "AIzaSyAyxCAogb6u_xlYSwfAY-ZSzo3YmxGiqNY";
         let chatHistory = [];
         
-        // REPARACIÓN SEGÚN TU IMAGEN: Modelos disponibles en 2026
-        const MODELS = [
-            "gemini-3.1-pro",
-            "gemini-3-flash",
-            "gemini-2.5-flash"
-        ];
+        // Modelos estables según tu panel de límites
+        const MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"];
 
         function init() {
             const val = document.getElementById('key-input').value.trim();
@@ -164,42 +134,50 @@
                 K = val;
                 document.getElementById('access-screen').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'flex';
-                log("SISTEMA", "Protocolo de red 2026 activado. Núcleos Pro/Flash vinculados.");
-            } else { alert("ACCESS DENIED"); }
+                log("SISTEMA", "Conexión encriptada establecida. Historial de sesión activo.");
+            } else { alert("ERROR_DE_ACCESO"); }
         }
 
-        function clearMem() {
+        // Función interna para limpiar memoria automáticamente si hay error
+        function autoRepair() {
             chatHistory = [];
-            document.getElementById('console').innerHTML = "";
             document.getElementById('mem-stat').innerText = "0/15";
-            log("SISTEMA", "Buffer de memoria limpiado.");
-        }
-
-        function speak(text) {
-            if (!document.getElementById('voice-enable').checked) return;
-            window.speechSynthesis.cancel();
-            const speech = new SpeechSynthesisUtterance(text);
-            speech.lang = 'es-ES';
-            speech.rate = 1.2;
-            window.speechSynthesis.speak(speech);
+            console.warn("Auto-reparación: Memoria purgada debido a una falla en el nodo.");
         }
 
         async function exec() {
             const qInput = document.getElementById('query');
             const con = document.getElementById('console');
+            const st = document.getElementById('st-text');
             const msg = qInput.value.trim();
+            
             if(!msg) return;
             qInput.value = "";
 
-            con.innerHTML += `<div class="msg"><div class="u-msg">>> USER_CMD:</div><div class="a-msg" style="border-left-color:var(--user)">${msg}</div></div>`;
-            document.getElementById('st-text').innerText = "PROCESANDO...";
+            // Renderizar mensaje de usuario
+            con.innerHTML += `
+                <div class="msg-container">
+                    <div class="u-header">>> USER_CMD</div>
+                    <div class="bubble u-bubble">${msg}</div>
+                </div>`;
+            
+            st.innerText = "LINKING";
             con.scrollTop = con.scrollHeight;
 
+            // Manejo de Imágenes
             if(msg.startsWith("/img ")) {
                 const prompt = msg.replace("/img ", "");
                 const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${Date.now()}`;
-                con.innerHTML += `<div class="msg"><div class="u-msg">RENDER_SYSTEM:</div><div class="a-msg"><img src="${url}" class="gen-img"></div></div>`;
-                document.getElementById('st-text').innerText = "ONLINE";
+                con.innerHTML += `
+                    <div class="msg-container">
+                        <div class="a-header">>> RENDER_OUTPUT</div>
+                        <div class="bubble a-bubble">
+                            <img src="${url}" class="gen-img">
+                            <br><small>Arte generado para: ${prompt}</small>
+                        </div>
+                    </div>`;
+                st.innerText = "READY";
+                con.scrollTop = con.scrollHeight;
                 return;
             }
 
@@ -213,13 +191,14 @@
             for (let m of MODELS) {
                 if(success) break;
                 document.getElementById('mod-name').innerText = m.toUpperCase();
+                
                 try {
                     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${K}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ 
                             contents: chatHistory,
-                            generationConfig: { temperature: 1, maxOutputTokens: 2000 }
+                            generationConfig: { temperature: 0.9, maxOutputTokens: 2000 }
                         })
                     });
 
@@ -227,56 +206,39 @@
 
                     if (d.candidates && d.candidates[0].content) {
                         const reply = d.candidates[0].content.parts[0].text;
-                        con.innerHTML += `<div class="msg"><div class="u-msg">JUAN_GPT:</div><div class="a-msg">${reply}</div></div>`;
+                        con.innerHTML += `
+                            <div class="msg-container">
+                                <div class="a-header">>> JUAN_GPT_RESPONSE</div>
+                                <div class="bubble a-bubble">${reply}</div>
+                            </div>`;
                         chatHistory.push({ role: "model", parts: [{ text: reply }] });
-                        speak(reply);
                         success = true;
                     } else {
-                        lastError = d.error ? d.error.message : "Falla en el filtrado de seguridad.";
+                        lastError = d.error ? d.error.message : "Filtro de seguridad o clave no propagada.";
                     }
                 } catch (e) {
-                    lastError = "Falla de enlace físico (Network Error).";
+                    lastError = "Falla de red.";
                 }
             }
 
             if (!success) {
-                con.innerHTML += `<div class="msg" style="color:var(--danger)">[CRITICAL_ERR]: ${lastError}</div>`;
-                chatHistory.pop();
+                con.innerHTML += `<div class="msg-container" style="color:var(--danger)">[SYS_ALERT]: ${lastError}. Reintentando con buffer limpio...</div>`;
+                autoRepair(); // Si falla, limpiamos la memoria para que el siguiente mensaje funcione sí o sí
             }
 
-            document.getElementById('st-text').innerText = "ONLINE";
+            st.innerText = "READY";
             con.scrollTop = con.scrollHeight;
         }
 
         function log(s, t) {
-            document.getElementById('console').innerHTML += `<div class="msg"><div class="u-msg">${s}:</div><div class="a-msg">${t}</div></div>`;
+            document.getElementById('console').innerHTML += `
+                <div class="msg-container">
+                    <div class="a-header">>> ${s}</div>
+                    <div class="bubble a-bubble">${t}</div>
+                </div>`;
         }
 
         document.getElementById('query').onkeypress = (e) => { if(e.key === 'Enter') exec(); };
-
-        // Animación de fondo simple
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const letters = "01";
-        const fontSize = 14;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-
-        function draw() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#0f0";
-            ctx.font = fontSize + "px monospace";
-            for (let i = 0; i < drops.length; i++) {
-                const text = letters[Math.floor(Math.random() * letters.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
-        }
-        setInterval(draw, 33);
     </script>
 </body>
 </html>
