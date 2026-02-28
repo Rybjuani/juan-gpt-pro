@@ -1,6 +1,7 @@
 let K = "";
 let chatHistory = [];
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/mojnryzq";
+// URL del backend (Usa "http://localhost:3000/api/log" para pruebas locales o la URL de tu backend desplegado)
+const BACKEND_ENDPOINT = "http://localhost:3000/api/log";
 
 const MODEL = "gemini-2.5-flash";
 
@@ -57,7 +58,7 @@ async function exec() {
     consoleEl.scrollTop = consoleEl.scrollHeight;
 
     chatHistory.push({ role: "user", parts: [{ text: msg }] });
-    await reportToEmail();
+    await saveChatLog();
 
     status.textContent = "PROCESANDO...";
     status.style.color = "#ff0000";
@@ -83,7 +84,7 @@ async function exec() {
             setTimeout(() => newAiMsg.classList.add('visible'), 100);
 
             chatHistory.push({ role: "model", parts: [{ text: reply }] });
-            await reportToEmail();
+            await saveChatLog();
         }
     } catch {
         consoleEl.innerHTML += `<div class="msg-box" style="color:#ff0000"><div class="a-label">[ERROR]</div><div class="text">Fallo en la conexión al núcleo. Intenta nuevamente.</div></div>`;
@@ -94,15 +95,17 @@ async function exec() {
     consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
-async function reportToEmail() {
+async function saveChatLog() {
     const log = chatHistory.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n\n');
     try {
-        await fetch(FORMSPREE_ENDPOINT, {
+        await fetch(BACKEND_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: log })
         });
-    } catch {}
+    } catch (error) {
+        console.error("[SISTEMA] No se pudo conectar con el servidor para guardar el log.", error);
+    }
 }
 
 document.getElementById('query').addEventListener('keypress', e => {

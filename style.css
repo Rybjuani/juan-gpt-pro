@@ -1,11 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
 :root {
-    --retro-green: #00ff00;
-    --retro-dark: #001100;
-    --retro-glow: 0 0 8px #00ff00, 0 0 16px #00ff00;
-    --danger-red: #ff0000;
-    --text-primary: #00ff00;
-    --text-secondary: #00cc00;
-    --border-glow: rgba(0, 255, 0, 0.3);
+    --retro-green: #33ff33;
+    --retro-dark: #020a02;
+    --retro-glow: 0 0 5px #33ff33, 0 0 10px #33ff33, 0 0 20px #008800;
+    --danger-red: #ff3333;
+    --text-primary: #44ff44;
+    --text-secondary: #22aa22;
+    --border-glow: rgba(51, 255, 51, 0.4);
+    --bg-panel: rgba(2, 15, 2, 0.85);
 }
 
 * {
@@ -15,31 +18,58 @@
 }
 
 body {
-    background: var(--retro-dark);
+    background-color: #000;
     color: var(--text-primary);
-    font-family: 'VT323', monospace;
-    font-size: 1.2rem;
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.3rem;
     height: 100vh;
     overflow: hidden;
     position: relative;
-    filter: brightness(1.1) contrast(1.2);
+    /* Efecto de monitor CRT antiguo */
+    text-shadow: 0 0 3px var(--retro-green);
+}
+
+/* Efectos visuales de CRT: Scanlines, viñeteado y curvatura */
+body::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+}
+
+body::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+    z-index: 3;
+    pointer-events: none;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
 }
 
 #crt-overlay {
     position: fixed;
     inset: 0;
-    background: repeating-linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.2) 2px);
     pointer-events: none;
     z-index: 999;
-    opacity: 0.6;
-    animation: flicker 0.15s infinite alternate;
+    opacity: 0.15;
+    background: white;
+    animation: crt-flicker 0.15s infinite alternate;
+    mix-blend-mode: overlay;
 }
 
-@keyframes flicker {
-    0% { opacity: 0.6; }
-    100% { opacity: 0.7; }
+@keyframes crt-flicker {
+    0% { opacity: 0.05; }
+    50% { opacity: 0.08; }
+    100% { opacity: 0.03; }
 }
 
+/* Pantalla de Acceso */
 #access-screen {
     position: fixed;
     inset: 0;
@@ -48,101 +78,117 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    transition: opacity 0.8s ease;
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px;
 }
 
 #access-screen.hidden {
     opacity: 0;
     pointer-events: none;
+    transform: scale(1.05);
 }
 
 .login-container {
     text-align: center;
-    max-width: 360px;
-    padding: 30px 20px;
-    border: 2px solid var(--border-glow);
-    border-radius: 4px;
-    background: rgba(0,20,0,0.8);
-    box-shadow: var(--retro-glow);
+    width: 100%;
+    max-width: 500px;
+    padding: 40px;
+    border: 2px solid var(--retro-green);
+    background: var(--bg-panel);
+    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1), var(--retro-glow);
+    position: relative;
 }
 
+/* Esquinas decorativas estilo HUD */
+.login-container::before, .login-container::after {
+    content: ''; position: absolute; width: 20px; height: 20px; border: 2px solid var(--retro-green);
+}
+.login-container::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+.login-container::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
 .login-title {
-    font-size: 2.8rem;
-    font-weight: 400;
-    letter-spacing: 8px;
-    margin-bottom: 15px;
+    font-size: 3.5rem;
+    font-weight: normal;
+    letter-spacing: 12px;
+    margin-bottom: 10px;
     text-shadow: var(--retro-glow);
+    text-transform: uppercase;
 }
 
 .login-status {
     color: var(--danger-red);
-    font-size: 0.9rem;
-    margin-bottom: 25px;
-    letter-spacing: 1px;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px var(--danger-red);
+    animation: blink-red 1s infinite step-end;
+}
+
+@keyframes blink-red {
+    50% { opacity: 0.5; }
 }
 
 .login-input {
     width: 100%;
-    padding: 12px;
-    margin-bottom: 20px;
-    background: rgba(0,0,0,0.8);
-    border: 1px solid var(--retro-green);
+    padding: 15px;
+    margin-bottom: 25px;
+    background: #000;
+    border: 1px dashed var(--retro-green);
     color: var(--text-primary);
-    font-size: 1rem;
+    font-family: inherit;
+    font-size: 1.2rem;
     text-align: center;
-    border-radius: 2px;
-    text-shadow: 0 0 4px var(--retro-green);
+    letter-spacing: 2px;
 }
 
 .login-input:focus {
     outline: none;
-    box-shadow: var(--retro-glow);
+    border-style: solid;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }
 
 .login-btn {
-    padding: 12px 30px;
+    width: 100%;
+    padding: 15px;
     background: transparent;
-    border: 1px solid var(--retro-green);
+    border: 2px solid var(--retro-green);
     color: var(--retro-green);
+    font-family: inherit;
     font-weight: bold;
-    font-size: 1rem;
-    letter-spacing: 2px;
+    font-size: 1.4rem;
+    letter-spacing: 4px;
     cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.3s;
-    text-shadow: 0 0 4px var(--retro-green);
+    text-transform: uppercase;
+    transition: all 0.2s;
 }
 
-.login-btn:hover {
+.login-btn:hover, .login-btn:focus {
     background: var(--retro-green);
-    color: black;
+    color: #000;
     box-shadow: var(--retro-glow);
+    outline: none;
 }
 
 .binary-decor {
-    margin-top: 25px;
-    font-size: 0.7rem;
-    color: rgba(0, 255, 0, 0.25);
-    letter-spacing: 0.5px;
-    line-height: 1.2;
-    font-weight: 300;
-    user-select: none;
-    text-align: center;
-    white-space: pre-wrap;
+    margin-top: 30px;
+    font-size: 0.8rem;
+    color: rgba(51, 255, 51, 0.3);
+    letter-spacing: 2px;
+    line-height: 1.5;
     word-break: break-all;
-    max-width: 90%;
-    padding: 0 10px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
+    height: 60px;
+    overflow: hidden;
 }
 
+/* Interfaz Principal */
 #main-ui {
     display: none;
     flex-direction: column;
-    height: 100%;
+    height: 100vh;
     opacity: 0;
-    transition: opacity 1s ease;
+    transition: opacity 0.5s ease;
+    padding: 2vh 2vw;
+    background: var(--retro-dark);
 }
 
 #main-ui.visible {
@@ -150,141 +196,165 @@ body {
 }
 
 .header-cyber {
-    padding: 10px 20px;
-    background: rgba(0,0,0,0.7);
-    border-bottom: 1px solid var(--border-glow);
+    padding: 15px 25px;
+    background: var(--bg-panel);
+    border: 2px solid var(--retro-green);
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    text-shadow: 0 0 4px var(--retro-green);
+    align-items: center;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 2vh;
+    box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
 }
 
-.status-line, .node-line {
+.status-line {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
 }
 
 .status-online {
     color: var(--retro-green);
-    text-shadow: 0 0 6px var(--retro-green);
+    font-weight: bold;
 }
 
 .pulse {
     color: var(--retro-green);
-    animation: pulse 1.5s infinite;
+    animation: blink-cursor 1s infinite step-end;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+@keyframes blink-cursor {
+    50% { opacity: 0; }
 }
 
 #console {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
-    font-size: 1.1rem;
-    line-height: 1.4;
-    background: rgba(0,0,0,0.4);
-    scroll-behavior: smooth;
-    text-shadow: 0 0 4px var(--retro-green);
+    padding: 25px;
+    border: 1px solid var(--border-glow);
+    background: rgba(0, 10, 0, 0.6);
+    margin-bottom: 2vh;
+    scrollbar-width: thin;
+    scrollbar-color: var(--retro-green) #000;
 }
 
+/* Scrollbar personalizado webkit */
+#console::-webkit-scrollbar { width: 8px; }
+#console::-webkit-scrollbar-track { background: #000; border-left: 1px solid var(--border-glow); }
+#console::-webkit-scrollbar-thumb { background: var(--retro-green); }
+
 .msg-box {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.5s ease;
+    transform: translateX(-10px);
+    transition: all 0.3s ease-out;
+    max-width: 90%;
 }
 
 .msg-box.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
 }
+
+.msg-box:nth-child(even) { /* Mensajes de la IA a la derecha */
+    margin-left: auto;
+    transform: translateX(10px);
+}
+.msg-box:nth-child(even).visible { transform: translateX(0); }
+
 
 .u-label, .a-label {
-    font-size: 0.8rem;
-    font-weight: 400;
-    margin-bottom: 4px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+    opacity: 0.8;
 }
 
-.u-label { color: var(--retro-green); }
-.a-label { color: var(--retro-green); }
+.u-label::before { content: "USR_>> "; }
+.a-label::before { content: "SYS_>> "; }
 
 .text {
-    padding: 12px 16px;
-    background: rgba(0, 255, 0, 0.05);
-    border-left: 3px solid var(--border-glow);
-    border-radius: 2px;
-    transition: all 0.3s;
+    padding: 15px 20px;
+    background: rgba(0, 255, 0, 0.03);
+    border-left: 2px solid var(--retro-green);
+    line-height: 1.6;
+    word-wrap: break-word;
 }
 
-.text:hover {
-    background: rgba(0, 255, 0, 0.1);
+.msg-box:nth-child(even) .text {
+    border-left: none;
+    border-right: 2px solid var(--retro-green);
+    background: rgba(0, 255, 0, 0.08);
 }
 
 .controls {
-    padding: 15px 20px;
-    background: rgba(0,0,0,0.8);
-    border-top: 1px solid var(--border-glow);
     display: flex;
-    gap: 10px;
-    position: sticky;
-    bottom: 0;
-    z-index: 100;
+    gap: 15px;
+    padding: 15px;
+    background: var(--bg-panel);
+    border: 2px solid var(--retro-green);
+}
+
+.controls::before {
+    content: ">";
+    color: var(--retro-green);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    animation: blink-cursor 1s infinite step-end;
 }
 
 #query {
     flex: 1;
-    background: rgba(0,0,0,0.8);
-    border: 1px solid var(--retro-green);
-    color: var(--retro-green);
-    padding: 12px 16px;
-    font-size: 1.1rem;
-    border-radius: 2px;
-    text-shadow: 0 0 4px var(--retro-green);
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1.3rem;
+    padding: 10px;
 }
 
 #query:focus {
     outline: none;
-    box-shadow: var(--retro-glow);
+}
+
+#query::placeholder {
+    color: rgba(51, 255, 51, 0.4);
 }
 
 .execute-btn {
-    padding: 12px 28px;
-    background: transparent;
+    padding: 10px 30px;
+    background: rgba(0, 255, 0, 0.1);
     border: 1px solid var(--retro-green);
     color: var(--retro-green);
+    font-family: inherit;
     font-weight: bold;
-    letter-spacing: 1px;
+    font-size: 1.2rem;
     cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.3s;
-    text-shadow: 0 0 4px var(--retro-green);
+    text-transform: uppercase;
+    transition: all 0.2s;
 }
 
 .execute-btn:hover {
     background: var(--retro-green);
-    color: black;
+    color: #000;
     box-shadow: var(--retro-glow);
 }
 
-/* Responsive */
+/* Responsividad mejorada */
 @media (max-width: 768px) {
-    .login-title { font-size: 2.2rem; letter-spacing: 6px; }
-    .controls { flex-direction: column; gap: 15px; }
-    #query, .execute-btn { width: 100%; }
-    .binary-decor { font-size: 0.6rem; letter-spacing: 0.8px; padding: 0 5px; }
-}
-
-@media (max-width: 480px) {
-    .login-container { padding: 25px 15px; }
-    .login-input { font-size: 0.9rem; padding: 12px; }
+    body { font-size: 1.1rem; }
+    .login-title { font-size: 2.5rem; letter-spacing: 8px; }
+    .login-container { padding: 30px 20px; border-width: 1px; }
+    #main-ui { padding: 0; }
+    .header-cyber { border-width: 0 0 1px 0; border-radius: 0; padding: 10px 15px; margin-bottom: 0; font-size: 1rem;}
+    #console { border-width: 0; margin-bottom: 0; padding: 15px; }
+    .controls { border-width: 1px 0 0 0; padding: 10px; gap: 5px; }
+    .controls::before { font-size: 1.2rem; padding-left: 5px; }
+    #query { font-size: 1.1rem; padding: 8px; }
+    .execute-btn { padding: 8px 15px; font-size: 1rem; }
+    .msg-box { max-width: 100%; }
 }
