@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="matrix-bg"></div> <!-- Fondo binario animado -->
+    <div id="scanlines"></div> <!-- Efecto scanline -->
     <div id="access-screen">
         <h1 class="login-title">JUAN_GPT</h1>
         <div class="login-status">[SISTEMA BLOQUEADO POR SEGURIDAD]</div>
@@ -21,7 +23,7 @@
             <div>ACTIVE_NODE: <span id="mod-active">AUTO</span></div>
         </header>
         <div id="console"></div>
-        <div id="debug-panel">>> SISTEMA DE MONITOREO ACTIVO...</div>
+        <div id="debug-panel" onclick="toggleDebug()">>> SISTEMA DE MONITOREO ACTIVO...</div>
         <div class="controls">
             <input type="text" id="query" placeholder="Escriba un comando..." autocomplete="off">
             <button class="btn" onclick="exec()">EJECUTAR</button>
