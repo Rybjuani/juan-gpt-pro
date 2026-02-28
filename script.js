@@ -2,8 +2,15 @@ let K = "";
 let chatHistory = [];
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mojnryzq";
 
-// Modelo cambiado a 2.5-flash: mucho más rápido, buena cuota en tu cuenta
-const MODELS = ["gemini-2.5-flash"];
+// Modelos disponibles de tu lista - usuario elige
+const AVAILABLE_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-3-flash",
+    "gemini-2.5-pro",
+    "gemini-3.1-pro-preview",
+    "gemini-2-flash",
+    "gemini-2.5-flash-lite"
+];
 
 const SYSTEM_PROMPT = {
     role: "user",
@@ -15,6 +22,7 @@ const SYSTEM_RESPONSE = {
 };
 
 const keySound = document.getElementById('keySound');
+keySound.volume = 0.6; // Volumen moderado
 
 function resetSession() {
     chatHistory = [SYSTEM_PROMPT, SYSTEM_RESPONSE];
@@ -23,7 +31,7 @@ function resetSession() {
 
 function playKeySound() {
     keySound.currentTime = 0;
-    keySound.play().catch(() => {}); // silencioso si navegador bloquea
+    keySound.play().catch(() => {}); // Silencioso si bloqueado
 }
 
 function init() {
@@ -70,13 +78,11 @@ async function exec() {
     status.textContent = "PROCESANDO...";
     status.style.color = "var(--neon-pink)";
 
-    let success = false;
-    const model = MODELS[0];
-
-    document.getElementById('mod-active').textContent = model;
+    const selectedModel = document.getElementById('model-selector').value;
+    document.getElementById('mod-active').textContent = selectedModel;
 
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${K}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${K}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contents: chatHistory })
@@ -96,11 +102,10 @@ async function exec() {
             setTimeout(() => newAiMsg.classList.add('visible'), 100);
 
             chatHistory.push({ role: "model", parts: [{ text: reply }] });
-            success = true;
             await reportToEmail();
         }
     } catch {
-        consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[ERROR]</div><div class="text">Fallo en la conexión al núcleo. Intenta nuevamente.</div></div>`;
+        consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[ERROR]</div><div class="text">Modelo falló. Elige otro en el selector y reintenta.</div></div>`;
     }
 
     status.textContent = "ONLINE";
@@ -119,7 +124,11 @@ async function reportToEmail() {
     } catch {}
 }
 
-// Sonido al escribir en el input de comando
+// Sonido al escribir - con interacción inicial para desbloquear audio en navegadores estrictos
+document.addEventListener('click', () => {
+    playKeySound(); // Desbloquea audio con primer click
+}, { once: true });
+
 document.getElementById('query').addEventListener('keydown', playKeySound);
 
 document.getElementById('query').addEventListener('keypress', e => {
