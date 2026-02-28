@@ -1,3 +1,5 @@
+/* style.css - Versión final completa con binario ajustado y centrado */
+
 :root {
     --neon-green: #00ff41;
     --neon-cyan: #00f0ff;
@@ -178,18 +180,18 @@ body {
 .binary-decor {
     margin-top: 35px;
     font-size: 0.68rem;
-    color: rgba(0, 180, 40, 0.28);          /* verde CRT viejo, menos brillante */
+    color: rgba(0, 180, 40, 0.28); /* verde CRT viejo, menos brillante */
     letter-spacing: 1.2px;
     line-height: 1.35;
     font-weight: 300;
     user-select: none;
     opacity: 0.75;
     text-shadow: 0 0 2px rgba(0,255,65,0.15);
-    white-space: pre;                       /* Preserva saltos de línea */
-    text-align: center;                     /* Centrado perfecto */
-    display: block;
+    white-space: pre-wrap;
+    word-break: break-all;
+    text-align: center;
     max-width: 100%;
-    overflow: hidden;
+    padding: 0 10px; /* Ajuste para encajar mejor sin desfasar */
 }
 
 /* Main UI */
@@ -340,12 +342,28 @@ body {
     transform: translateY(-2px);
 }
 
+/* Selector de modelo */
+#model-selector {
+    background: rgba(0,0,0,0.6);
+    border: 1px solid var(--neon-cyan);
+    color: var(--neon-green);
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#model-selector:focus {
+    outline: none;
+    border-color: var(--neon-green);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .login-title { font-size: 2.4rem; letter-spacing: 8px; }
     .controls { flex-direction: column; gap: 18px; }
     #query, .execute-btn { width: 100%; }
-    .binary-decor { font-size: 0.65rem; }
+    .binary-decor { font-size: 0.6rem; letter-spacing: 1px; padding: 0 5px; }
 }
 
 @media (max-width: 480px) {
