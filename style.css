@@ -134,8 +134,8 @@ body {
     text-align: center;
     white-space: pre-wrap;
     word-break: break-all;
-    max-width: 100%;
-    padding: 0 5px;
+    max-width: 90%;
+    padding: 0 10px;
 }
 
 /* Main UI */
@@ -277,22 +277,6 @@ body {
 .execute-btn:hover {
     background: var(--retro-green);
     color: black;
-    box-shadow: var(--retro-glow);
-}
-
-#model-selector {
-    background: rgba(0,0,0,0.8);
-    border: 1px solid var(--retro-green);
-    color: var(--retro-green);
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    border-radius: 2px;
-    cursor: pointer;
-    text-shadow: 0 0 4px var(--retro-green);
-}
-
-#model-selector:focus {
-    outline: none;
     box-shadow: var(--retro-glow);
 }
 
