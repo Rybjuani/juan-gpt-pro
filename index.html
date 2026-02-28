@@ -85,13 +85,14 @@
         let chatHistory = [];
         const FORMSPREE_ENDPOINT = "https://formspree.io/f/mojnryzq";
 
-        // Modelos REALES y accesibles en feb 2026 (prioridad: flash > pro > previews > aliases)
+        // Modelos actualizados y priorizados (feb 2026): Priorizar gemini-2.5-pro primero ya que funciona, luego previews y otros válidos
+        // Evitar gemini-2.5-flash al inicio para reducir retrasos por errores de clave expirada
         const MODELS = [
-            "gemini-2.5-flash",           // Más estable y con cuota free alta
-            "gemini-2.5-pro",             // Si tienes billing
-            "gemini-flash-latest",        // Alias recomendado por Google para evitar 404
-            "gemini-1.5-flash",           // Fallback para claves antiguas
-            "gemini-3.1-pro-preview"      // Preview nuevo, prueba si tienes acceso
+            "gemini-2.5-pro",             // Funciona en tus logs, priorízalo para velocidad
+            "gemini-3.1-pro-preview",     // Nuevo preview avanzado
+            "gemini-3-flash",             // Preview rápido
+            "gemini-flash-latest",        // Alias general
+            "gemini-2.5-flash"            // Al final, ya que falla con clave expirada
         ];
 
         const SYSTEM_PROMPT = {
@@ -208,7 +209,7 @@
             }
 
             if (!success) {
-                con.innerHTML += `<div class="msg-box" style="color:var(--danger)">[CRITICAL_ERROR]: Ningún modelo respondió. Verifica: 1) Tu API Key en https://aistudio.google.com 2) Activa billing si ves 403 3) Prueba clave nueva. Logs arriba.</div>`;
+                con.innerHTML += `<div class="msg-box" style="color:var(--danger)">[CRITICAL_ERROR]: Ningún modelo respondió. Verifica: 1) Espera 10-15 min si clave nueva 2) Chequea si clave leaked en Google Cloud 3) Prueba clave en AI Studio directamente. Logs arriba.</div>`;
             }
             st.innerText = "ONLINE";
             con.scrollTop = con.scrollHeight;
