@@ -13,9 +13,16 @@ const SYSTEM_RESPONSE = {
     parts: [{ text: "Entendido. Estoy listo para ayudarte." }]
 };
 
+const keySound = document.getElementById('keySound');
+
 function resetSession() {
     chatHistory = [SYSTEM_PROMPT, SYSTEM_RESPONSE];
     document.getElementById('console').innerHTML = '';
+}
+
+function playKeySound() {
+    keySound.currentTime = 0;
+    keySound.play().catch(() => {}); // silencioso si bloqueado
 }
 
 function init() {
@@ -74,7 +81,7 @@ async function exec() {
             body: JSON.stringify({ contents: chatHistory })
         });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error();
 
         const data = await res.json();
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -91,8 +98,7 @@ async function exec() {
             success = true;
             await reportToEmail();
         }
-    } catch (err) {
-        // Sin mostrar error al usuario - solo silencioso
+    } catch {
         consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[ERROR]</div><div class="text">Fallo en la conexión al núcleo. Intenta nuevamente.</div></div>`;
     }
 
@@ -111,6 +117,11 @@ async function reportToEmail() {
         });
     } catch {}
 }
+
+// Sonido de tecla al escribir (solo en el input de comando)
+document.getElementById('query').addEventListener('keydown', () => {
+    playKeySound();
+});
 
 document.getElementById('query').addEventListener('keypress', e => {
     if (e.key === 'Enter') exec();
