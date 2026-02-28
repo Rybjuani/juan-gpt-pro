@@ -1,3 +1,5 @@
+/* style.css - Tema Cyberpunk / Hacker profesional 2026 - Versión FINAL completa */
+
 :root {
     --neon-green: #00ff41;
     --neon-cyan: #00f0ff;
@@ -88,8 +90,17 @@ body {
     opacity: 0.8;
 }
 
-.glitch::before { left: 2px; text-shadow: -2px 0 var(--neon-pink); animation: glitch 2s infinite; }
-.glitch::after  { left: -2px; text-shadow: 2px 0 var(--neon-cyan); animation: glitch 2.5s infinite; }
+.glitch::before { 
+    left: 2px; 
+    text-shadow: -2px 0 var(--neon-pink); 
+    animation: glitch 2s infinite; 
+}
+
+.glitch::after { 
+    left: -2px; 
+    text-shadow: 2px 0 var(--neon-cyan); 
+    animation: glitch 2.5s infinite; 
+}
 
 /* Login screen */
 #access-screen {
@@ -176,13 +187,15 @@ body {
 }
 
 .binary-decor {
-    margin-top: 30px;
-    font-size: 0.72rem;
-    color: rgba(0,255,65,0.35);
-    letter-spacing: 1px;
-    line-height: 1.4;
+    margin-top: 35px;
+    font-size: 0.68rem;
+    color: rgba(0, 180, 40, 0.28);          /* verde CRT viejo, menos brillante */
+    letter-spacing: 1.2px;
+    line-height: 1.35;
     font-weight: 300;
     user-select: none;
+    opacity: 0.75;
+    text-shadow: 0 0 2px rgba(0,255,65,0.15);
 }
 
 /* Main UI */
@@ -343,4 +356,5 @@ body {
 @media (max-width: 480px) {
     .login-container { padding: 30px 20px; }
     .login-input { font-size: 1rem; padding: 14px; }
+    .binary-decor { font-size: 0.65rem; }
 }
