@@ -2,16 +2,6 @@ let K = "";
 let chatHistory = [];
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mojnryzq";
 
-// Modelos disponibles de tu lista - usuario elige
-const AVAILABLE_MODELS = [
-    "gemini-2.5-flash",
-    "gemini-3-flash",
-    "gemini-2.5-pro",
-    "gemini-3.1-pro-preview",
-    "gemini-2-flash",
-    "gemini-2.5-flash-lite"
-];
-
 const SYSTEM_PROMPT = {
     role: "user",
     parts: [{ text: "Eres JUAN_GPT, un asistente útil y profesional. Responde de manera clara, concisa y fácil de entender. Evita el uso excesivo de negritas, cursivas o markdown innecesario. Usa formato solo cuando sea necesario para claridad. Mantén un tono amigable y directo." }]
@@ -22,7 +12,7 @@ const SYSTEM_RESPONSE = {
 };
 
 const keySound = document.getElementById('keySound');
-keySound.volume = 0.6; // Volumen moderado
+keySound.volume = 0.8;
 
 function resetSession() {
     chatHistory = [SYSTEM_PROMPT, SYSTEM_RESPONSE];
@@ -31,7 +21,7 @@ function resetSession() {
 
 function playKeySound() {
     keySound.currentTime = 0;
-    keySound.play().catch(() => {}); // Silencioso si bloqueado
+    keySound.play().catch(() => {});
 }
 
 function init() {
@@ -76,11 +66,12 @@ async function exec() {
     await reportToEmail();
 
     status.textContent = "PROCESANDO...";
-    status.style.color = "var(--neon-pink)";
+    status.style.color = "#ff00aa"; // Ajuste retro
 
     const selectedModel = document.getElementById('model-selector').value;
     document.getElementById('mod-active').textContent = selectedModel;
 
+    let success = false;
     try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${K}`, {
             method: "POST",
@@ -102,14 +93,15 @@ async function exec() {
             setTimeout(() => newAiMsg.classList.add('visible'), 100);
 
             chatHistory.push({ role: "model", parts: [{ text: reply }] });
+            success = true;
             await reportToEmail();
         }
     } catch {
-        consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[ERROR]</div><div class="text">Modelo falló. Elige otro en el selector y reintenta.</div></div>`;
+        consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[ERROR]</div><div class="text">Modelo falló. Elige otro y reintenta.</div></div>`;
     }
 
     status.textContent = "ONLINE";
-    status.style.color = "var(--neon-green)";
+    status.style.color = var(--retro-green);
     consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
@@ -124,9 +116,9 @@ async function reportToEmail() {
     } catch {}
 }
 
-// Sonido al escribir - con interacción inicial para desbloquear audio en navegadores estrictos
+// Desbloqueo y sonido al escribir
 document.addEventListener('click', () => {
-    playKeySound(); // Desbloquea audio con primer click
+    playKeySound(); // Desbloquea con primer click
 }, { once: true });
 
 document.getElementById('query').addEventListener('keydown', playKeySound);
