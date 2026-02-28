@@ -2,7 +2,6 @@ let K = "";
 let chatHistory = [];
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mojnryzq";
 
-// Modelo fijo: gemini-2.5-flash - el más rápido y estable de tu lista
 const MODEL = "gemini-2.5-flash";
 
 const SYSTEM_PROMPT = {
@@ -70,7 +69,10 @@ async function exec() {
             body: JSON.stringify({ contents: chatHistory })
         });
 
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(errText.slice(0,100));
+        }
 
         const data = await res.json();
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -86,12 +88,12 @@ async function exec() {
             chatHistory.push({ role: "model", parts: [{ text: reply }] });
             await reportToEmail();
         }
-    } catch {
-        consoleEl.innerHTML += `<div class="msg-box" style="color:var(--danger-red)"><div class="a-label">[ERROR]</div><div class="text">Fallo en la conexión al núcleo. Intenta nuevamente.</div></div>`;
+    } catch (err) {
+        consoleEl.innerHTML += `<div class="msg-box" style="color:#ff0000"><div class="a-label">[ERROR]</div><div class="text">Fallo: ${err.message || 'Conexión fallida'}</div></div>`;
     }
 
     status.textContent = "ONLINE";
-    status.style.color = var(--retro-green);
+    status.style.color = "#00ff00";
     consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
