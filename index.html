@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JUAN_GPT // NEURAL_ELITE_v4</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap"> <!-- Fuente retro CRT -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="matrix-bg"></div>
-    <div id="scanlines"></div>
+    <div id="crt-overlay"></div> <!-- Overlay para efecto CRT retro -->
 
     <audio id="keySound" preload="auto" loop="false">
         <source src="https://assets.codepen.io/605876/typewriter-key-1.mp3" type="audio/mpeg">
@@ -17,21 +16,16 @@
 
     <div id="access-screen">
         <div class="login-container">
-            <h1 class="login-title glitch" data-text="JUAN_GPT">JUAN_GPT</h1>
+            <h1 class="login-title">JUAN_GPT</h1>
             <div class="login-status">[ACCESO DENEGADO - PROTOCOLO DE SEGURIDAD ACTIVO]</div>
             <input type="password" id="key-input" class="login-input" placeholder="API_KEY_XXXX-XXXX-XXXX-XXXX" autocomplete="off">
-            <button class="login-btn glitch-hover" onclick="init()">INICIAR SECUENCIA</button>
+            <button class="login-btn" onclick="init()">INICIAR SECUENCIA</button>
             <div class="binary-decor">
-                10100101100101011001010110010101100101011001010110010101100101011001010110010101100101
+                10100101100101011001010110010101100101011001010110010101100101011001010110010101100101<br>
+                01011001010110010101100101011001010110010101100101011001010110010101100101011001010110<br>
+                10010110010101100101011001010110010101100101011001010110010101100101011001010110010101<br>
+                01100101011001010110010101100101011001010110010101100101011001010110010101100101011001<br>
                 01011001010110010101100101011001010110010101100101011001010110010101100101011001010110
-                10010110010101100101011001010110010101100101011001010110010101100101011001010110010101
-                01100101011001010110010101100101011001010110010101100101011001010110010101100101011001
-                01011001010110010101100101011001010110010101100101011001010110010101100101011001010110
-                10010110010101100101011001010110010101100101011001010110010101100101011001010110010101
-                01100101011001010110010101100101011001010110010101100101011001010110010101100101011001
-                01011001010110010101100101011001010110010101100101011001010110010101100101011001010110
-                10010110010101100101011001010110010101100101011001010110010101100101011001010110010101
-                01100101011001010110010101100101011001010110010101100101011001010110010101100101011001
             </div>
         </div>
     </div>
@@ -45,12 +39,12 @@
             <div class="node-line">
                 NODE: 
                 <select id="model-selector">
-                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (rápido)</option>
-                    <option value="gemini-3-flash">Gemini 3 Flash (rápido)</option>
-                    <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                    <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview</option>
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    <option value="gemini-3-flash">Gemini 3 Flash</option>
                     <option value="gemini-2-flash">Gemini 2 Flash</option>
                     <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                    <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                    <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview</option>
                 </select>
             </div>
         </header>
@@ -59,7 +53,7 @@
 
         <div class="controls">
             <input type="text" id="query" placeholder=">> Enter command..." autocomplete="off">
-            <button class="btn execute-btn glitch-hover" onclick="exec()">EJECUTAR</button>
+            <button class="btn execute-btn" onclick="exec()">EJECUTAR</button>
         </div>
     </div>
 
