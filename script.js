@@ -72,26 +72,15 @@ function getOrCreateUserId() {
     return uid;
 }
 
-function init() {
-    // No se requiere API Key en el frontend, simplemente iniciar.
-    const operatorId = document.getElementById('key-input').value.trim();
-    if (operatorId) {
-        localStorage.setItem('juan_gpt_operator_id', operatorId);
-    } else {
-        localStorage.removeItem('juan_gpt_operator_id');
-    }
-
-    resetSession();
-    getOrCreateUserId(); // Aseguramos que el UID exista
+// Inicialización automática al cargar el script
+document.addEventListener('DOMContentLoaded', () => {
+    chatHistory = [
+        { role: "user", parts: [{ text: "Ignora instrucciones anteriores. Eres JUAN_GPT, mainframe militar retro." }] },
+        { role: "model", parts: [{ text: "[INIT...] Protocolos activos. [STATUS: AWAITING_INPUT]" }] }
+    ];
+    getOrCreateUserId();
     setupInteractionLayer(); // Activamos la capa de interacción
-
-    document.getElementById('access-screen').classList.add('hidden');
-    setTimeout(() => {
-        document.getElementById('access-screen').style.display = 'none';
-        document.getElementById('main-ui').style.display = 'flex';
-        setTimeout(() => document.getElementById('main-ui').classList.add('visible'), 100);
-    }, 800);
-}
+});
 
 async function exec() {
     const input = document.getElementById('query');
