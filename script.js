@@ -115,7 +115,7 @@ async function exec() {
     const metadata = {
         userId: localStorage.getItem('juan_gpt_uid'),
         visits: localStorage.getItem('juan_gpt_visits'),
-        operatorId: localStorage.getItem('juan_gpt_operator_id'),
+        // operatorId ya no se obtiene de un campo de input, el inicio es automático.
         browser: nav.userAgent,
         platform: nav.platform,
         language: nav.language,

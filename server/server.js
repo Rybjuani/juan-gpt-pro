@@ -25,7 +25,7 @@ if (uri) {
     console.warn('[WARNING] MONGO_URI no definida. Los logs no se guardarán permanentemente.');
 }
 
-// Endpoint de salud (Healthcheck) para el Cron-job (Mantener vivo) - CORREGIDO
+// Endpoint de salud (Healthcheck) para el Cron-job (Mantener vivo)
 app.get('/api/health', (req, res) => {
     res.sendStatus(200); // Respuesta mínima y estándar
 });
