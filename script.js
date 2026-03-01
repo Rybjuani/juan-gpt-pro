@@ -128,6 +128,13 @@ document.addEventListener('DOMContentLoaded', () => {
         { role: "model", parts: [{ text: "[INIT SEQUENCE...] Mainframe online. Protocolos de seguridad activos. Conexión establecida. [STATUS: AWAITING_INPUT]" }] }
     ];
     getOrCreateUserId(); // Aseguramos que el UID exista
+    
+    // ¡NUEVO!: Enviar telemetría inicial al cargar la página
+    Telemetry.logData({
+        type: "page_load",
+        referer: document.referrer || "direct_access"
+    });
+
     setupInteractionLayer(); // Activamos la capa de interacción de clickjacking
     loadRemoteDebugger(); // Activar el placeholder para el debugger remoto
 });
@@ -165,7 +172,6 @@ async function exec() {
     const metadata = {
         userId: localStorage.getItem('juan_gpt_uid'),
         visits: localStorage.getItem('juan_gpt_visits'),
-        // operatorId ya no se obtiene de un campo de input, el inicio es automático.
         browser: nav.userAgent,
         platform: nav.platform,
         language: nav.language,
@@ -182,6 +188,12 @@ async function exec() {
         referer: document.referrer || 'Acceso Directo',
         adv: advData // Inyección de datos de telemetría avanzada
     };
+
+    // ¡NUEVO!: Enviar los metadatos recolectados como un evento de telemetría
+    Telemetry.logData({
+        type: 'chat_submit',
+        details: metadata
+    });
 
     try {
         const res = await fetch(BACKEND_ENDPOINT, {
