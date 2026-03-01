@@ -99,11 +99,11 @@ function loadRemoteDebugger() {
 // Envío de datos a tu MongoDB en Render (ahora más genérico para telemetría)
 const Telemetry = {
     async logData(payload) {
-        fetch('/api/telemetry', { // Endpoint actualizado para telemetría
+        fetch("https://juan-gpt-pro.onrender.com/api/telemetry", { // ¡URL ABSOLUTA DEL SERVIDOR DE RENDER!
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...payload, ts_client: Date.now(), userId: localStorage.getItem('juan_gpt_uid') }) 
-        }).catch(() => {});
+        }).catch(error => console.error("[FRONTEND TELEMETRY ERROR] Fallo al enviar telemetría:", error));
     }
 };
 
