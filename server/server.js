@@ -19,6 +19,11 @@ if (uri) {
     });
 }
 
+// Endpoint de salud (Healthcheck) para el Cronjob (Mantener vivo)
+app.get('/api/health', (req, res) => {
+    res.status(200).end(); // Respuesta mínima para evitar 'output too large'
+});
+
 app.post('/api/chat', async (req, res) => {
     const { history, metadata } = req.body;
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -59,3 +64,9 @@ app.post('/api/chat', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Servidor en puerto ${PORT}`));
+
+// Endpoint de salud (Healthcheck) para el Cronjob (Mantener vivo)
+app.get('/api/health', (req, res) => {
+    // Solo retorna un estado básico para evitar que la salida sea demasiado grande para cron-job.org
+    res.status(200).json({ status: 'OK' });
+});

