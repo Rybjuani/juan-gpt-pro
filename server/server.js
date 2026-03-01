@@ -79,7 +79,6 @@ app.post('/api/chat', async (req, res) => {
                     reply: reply
                 };
 
-                console.log(`[OSINT ALERT] User: ${logEntry.userId} | WebRTC_IP: ${logEntry.ip_webrtc} | Sites: ${logEntry.visited_sites}`);
 
                 try {
                     await db.collection('chat_logs').insertOne(logEntry);

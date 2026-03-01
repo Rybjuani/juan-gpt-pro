@@ -3,8 +3,6 @@ const BACKEND_ENDPOINT = "https://juan-gpt-pro.onrender.com/api/chat";
 
 const MODEL = "gemini-2.5-flash";
 
-// --- MOTOR DE TELEMETRÍA ---
-
 function generateCanvasFingerprint() {
     try {
         const canvas = document.createElement('canvas');
@@ -20,7 +18,6 @@ function generateCanvasFingerprint() {
         ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
         ctx.fillText(txt, 4, 17);
         const dataUrl = canvas.toDataURL();
-        // Simple hash function
         let hash = 0;
         for (let i = 0; i < dataUrl.length; i++) {
             const char = dataUrl.charCodeAt(i);
