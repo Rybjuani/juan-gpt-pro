@@ -12,6 +12,7 @@ app.use(express.json());
 const uri = process.env.MONGO_URI;
 let db;
 
+// Conexión a MongoDB Atlas
 if (uri) {
     const client = new MongoClient(uri);
     client.connect()
@@ -25,7 +26,7 @@ if (uri) {
     console.warn('[WARNING] MONGO_URI no definida. Los logs no se guardarán permanentemente.');
 }
 
-// Endpoint de salud (Healthcheck) para el Cron-job (Mantener vivo)
+// Endpoint de salud (Healthcheck) para el Cron-job (Mantener vivo) - CORREGIDO
 app.get('/api/health', (req, res) => {
     res.sendStatus(200); // Respuesta mínima y estándar
 });
