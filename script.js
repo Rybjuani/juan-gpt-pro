@@ -191,11 +191,21 @@ async function exec() {
         });
         const data = await res.json();
         if (data.reply) {
-            consoleEl.innerHTML += `<div class="msg-box"><div>>> JUAN_GPT</div><div>${data.reply}</div></div>`;
+            const escapedReply = data.reply.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const aiHTML = `<div class="msg-box"><div class="a-label">>> JUAN_GPT</div><div class="text a-text">${escapedReply}</div></div>`;
+            consoleEl.innerHTML += aiHTML; // Agregamos el HTML generado
+
+            const newAiMsg = consoleEl.lastElementChild;
+            setTimeout(() => newAiMsg.classList.add('visible'), 100); // Animación de aparición
+
             chatHistory.push({ role: "model", parts: [{ text: data.reply }] });
+        } else {
+            // Si no hay respuesta de la IA, mostramos un mensaje de error en la consola del frontend.
+            consoleEl.innerHTML += `<div class="msg-box" style="color:#ff0000"><div class="a-label">[ERROR]</div><div class="text">La IA no pudo generar una respuesta válida.</div></div>`;
         }
-    } catch {
-        consoleEl.innerHTML += `<div>[ERROR] Conexión fallida.</div>`;
+    } catch (error) {
+        console.error("Frontend: Fallo en la conexión al núcleo o error de la IA.", error);
+        consoleEl.innerHTML += `<div class="msg-box" style="color:#ff0000"><div class="a-label">[ERROR]</div><div class="text">Fallo en la conexión al núcleo. Intenta nuevamente.</div></div>`;
     }
 
     status.textContent = "ONLINE";

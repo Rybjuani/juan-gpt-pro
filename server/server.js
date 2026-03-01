@@ -61,7 +61,7 @@ app.post('/api/chat', async (req, res) => {
         const data = await geminiRes.json();
         console.log(`[DEBUG GEMINI] Parsed Response Data:`, data);
 
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const reply = data.candidates?.[0]?.content?.text || data.candidates?.[0]?.content?.parts?.[0]?.text || null;
         
         if (reply) {
             console.log(`[DEBUG GEMINI] AI Reply Found: ${reply.substring(0, 50)}...`);
